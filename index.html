@@ -412,6 +412,47 @@ details>summary{padding:4px 0}
   .mcol .lab{font-size:10.5px}
   .sig{width:100%}
 }
+
+/* ===== v3: login animasi + latar beranda bergerak ===== */
+.login-side{isolation:isolate}
+.login-side>*{position:relative;z-index:1}
+.login-side>.fx-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.login-side>.fx-orbs{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.fx-orbs i{position:absolute;border-radius:50%;filter:blur(60px);opacity:.55;will-change:transform}
+.fx-orbs i:nth-child(1){width:46vmax;height:46vmax;left:-14vmax;top:-12vmax;background:radial-gradient(circle,#3D5BFF,transparent 65%);animation:orb1 22s ease-in-out infinite alternate}
+.fx-orbs i:nth-child(2){width:38vmax;height:38vmax;right:-14vmax;bottom:-10vmax;background:radial-gradient(circle,#12B8A6,transparent 65%);animation:orb2 26s ease-in-out infinite alternate}
+.fx-orbs i:nth-child(3){width:26vmax;height:26vmax;left:30%;top:42%;background:radial-gradient(circle,#8B5CF6,transparent 65%);opacity:.4;animation:orb3 30s ease-in-out infinite alternate}
+@keyframes orb1{to{transform:translate(18vmax,14vmax) scale(1.15)}}
+@keyframes orb2{to{transform:translate(-16vmax,-12vmax) scale(1.1)}}
+@keyframes orb3{to{transform:translate(-12vmax,10vmax) scale(.85)}}
+.rise{opacity:0;transform:translateY(16px);animation:rise .8s cubic-bezier(.2,.7,.2,1) forwards;animation-delay:var(--d,0s)}
+@keyframes rise{to{opacity:1;transform:none}}
+.disc-quad div{animation:floaty 6s ease-in-out infinite}
+.disc-quad div:nth-child(2){animation-delay:-1.5s}.disc-quad div:nth-child(3){animation-delay:-3s}.disc-quad div:nth-child(4){animation-delay:-4.5s}
+@keyframes floaty{50%{transform:translateY(-5px)}}
+.login-main{background:var(--bg);position:relative;overflow:hidden}
+.login-card{position:relative;z-index:1;background:var(--surface);border:1px solid var(--line-2);border-radius:16px;padding:28px 26px;box-shadow:0 18px 50px rgba(20,35,140,.16)}
+.role-pick{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.role-opt{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;border:2px solid var(--line);border-radius:12px;background:var(--surface-2);color:var(--ink);text-align:center;font-size:13.5px;transition:border-color .2s,background .2s,transform .2s,box-shadow .2s}
+.role-opt .ri{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--brand-soft);color:var(--brand-text);transition:background .2s,color .2s}
+.role-opt:hover{transform:translateY(-2px);border-color:var(--brand)}
+.role-opt:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+.role-opt.on{border-color:var(--brand);background:var(--brand-soft);box-shadow:0 6px 18px rgba(36,64,224,.22)}
+.role-opt.on .ri{background:var(--brand);color:var(--on-brand)}
+.pw-wrap{position:relative;display:block}
+.pw-wrap .input{width:100%;padding-right:78px;box-sizing:border-box}
+.pw-eye{all:unset;cursor:pointer;position:absolute;right:6px;top:50%;transform:translateY(-50%);padding:5px 9px;font-size:12px;font-weight:700;color:var(--brand-text);border-radius:6px}
+.pw-eye:hover,.pw-eye:focus-visible{background:var(--brand-soft)}
+@media (max-width:820px){.login-side{min-height:210px}.login-card{padding:22px 18px}}
+/* beranda: gradasi ambient yang bergerak pelan di belakang konten */
+body.has-user::before,body.has-user::after{content:"";position:fixed;z-index:0;pointer-events:none;border-radius:50%;filter:blur(70px);opacity:.5}
+body.has-user::before{width:52vmax;height:52vmax;right:-16vmax;top:-18vmax;background:radial-gradient(circle,rgba(61,91,255,.42),transparent 65%);animation:orb2 28s ease-in-out infinite alternate}
+body.has-user::after{width:44vmax;height:44vmax;left:8vmax;bottom:-22vmax;background:radial-gradient(circle,rgba(18,184,166,.34),transparent 65%);animation:orb1 34s ease-in-out infinite alternate}
+body.has-user .shell,body.has-user .mbar{position:relative;z-index:1}
+body.has-user .shell{background:transparent}
+.content>*{animation:rise .55s cubic-bezier(.2,.7,.2,1) both}
+.content>*:nth-child(2){animation-delay:.05s}.content>*:nth-child(3){animation-delay:.1s}.content>*:nth-child(4){animation-delay:.15s}
+@media (prefers-reduced-motion:reduce){.rise,.content>*{opacity:1!important;transform:none!important}}
 </style>
 </head>
 <body>
@@ -1197,6 +1238,7 @@ const App = {
   },
   render() {
     const app = $('#app');
+    document.body.classList.toggle('has-user', !!S.user);
     if (!S.user) { app.innerHTML = Views.login(); Views.loginMount(); return; }
     if (S.test) { this.renderTest(); return; }
     const groups = []; NAV.filter(n => n.roles.includes(S.user.role)).forEach(n => { const g = n.group || ''; let grp = groups.find(x => x.g === g); if (!grp) groups.push(grp = { g, items: [] }); grp.items.push(n); });
@@ -1244,22 +1286,40 @@ const App = {
 /* ---------------- Views ---------------- */
 const Views = {};
 
+const LOGIN_ROLES = {
+  admin: { label: 'Admin Perusahaan', hint: 'Kelola psikotes, peserta, karyawan, dan payroll perusahaan.', roles: [CO, SA] },
+  peserta: { label: 'Peserta', hint: 'Kerjakan psikotes DISC dan tes kemampuan unit kerja.', roles: [US] }
+};
 Views.login = () => `<div class="login-wrap">
   <section class="login-side">
-    <div class="stack" style="gap:4px"><div class="brandmark"><span class="dot"><i></i><i></i><i></i><i></i></span>Unimedika HR Suite</div><div class="small" style="color:var(--ink-muted);padding-left:38px">RS Unimedika Setu Bekasi</div></div>
-    <div class="stack" style="gap:16px"><h1>Rekrutmen, psikotes, dan payroll dalam satu tempat.</h1>
-      <p>Psikotes DISC berbatas waktu dengan interpretasi otomatis, tes kompetensi per unit kerja, jadwal wawancara Zoom/Google Meet, serta perhitungan lembur, cuti, dan gaji karyawan.</p></div>
-    <div class="disc-quad"><div style="border-color:var(--dD)"><b>D</b>Dominance</div><div style="border-color:var(--dI)"><b>I</b>Influence</div><div style="border-color:var(--dS)"><b>S</b>Steadiness</div><div style="border-color:var(--dC)"><b>C</b>Compliance</div></div>
+    <canvas class="fx-canvas" id="fxCanvas" aria-hidden="true"></canvas>
+    <div class="fx-orbs" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="stack rise" style="gap:4px;--d:.05s"><div class="brandmark"><span class="dot"><i></i><i></i><i></i><i></i></span>Unimedika HR Suite</div><div class="small" style="color:var(--ink-muted);padding-left:38px">RS Unimedika Setu Bekasi</div></div>
+    <div class="stack" style="gap:16px"><h1 class="rise" style="--d:.15s">Rekrutmen, psikotes, dan payroll dalam satu tempat.</h1>
+      <p class="rise" style="--d:.28s">Psikotes DISC berbatas waktu dengan interpretasi otomatis, tes kompetensi per unit kerja, jadwal wawancara Zoom/Google Meet, serta perhitungan lembur, cuti, dan gaji karyawan.</p></div>
+    <div class="disc-quad rise" style="--d:.4s"><div style="border-color:var(--dD)"><b>D</b>Dominance</div><div style="border-color:var(--dI)"><b>I</b>Influence</div><div style="border-color:var(--dS)"><b>S</b>Steadiness</div><div style="border-color:var(--dC)"><b>C</b>Compliance</div></div>
   </section>
-  <section class="login-main"><form class="login-card" id="loginForm" autocomplete="on">
-    <div><h1 style="font-size:24px">Masuk</h1><p class="muted" style="margin:4px 0 0">Gunakan akun yang diberikan HRD.</p></div>
+  <section class="login-main"><form class="login-card rise" style="--d:.2s" id="loginForm" autocomplete="on">
+    <div><h1 style="font-size:24px">Masuk</h1><p class="muted" style="margin:4px 0 0">Pilih jenis akun, lalu masukkan data login dari HRD.</p></div>
+    <div class="role-pick" role="radiogroup" aria-label="Jenis akun">
+      ${Object.entries(LOGIN_ROLES).map(([k, r], i) => `<button type="button" class="role-opt ${i === 0 ? 'on' : ''}" role="radio" aria-checked="${i === 0}" data-role="${k}"><span class="ri" aria-hidden="true">${k === 'admin' ? '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-5h6v5M9 10h.01M12 10h.01M15 10h.01"/></svg>' : '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>'}</span><b>${r.label}</b></button>`).join('')}
+    </div>
+    <p class="small muted role-hint" id="roleHint" style="margin:-6px 0 0">${LOGIN_ROLES.admin.hint}</p>
     <label class="f">Username<input class="input" id="lu" name="u" autocomplete="username" required></label>
-    <label class="f">Password<input class="input" id="lp" name="p" type="password" autocomplete="current-password" required></label>
+    <label class="f">Password<span class="pw-wrap"><input class="input" id="lp" name="p" type="password" autocomplete="current-password" required><button type="button" class="pw-eye" id="pwEye" aria-label="Tampilkan password">Lihat</button></span></label>
     <div id="loginErr" class="note bad" hidden></div>
     <button class="btn primary" type="submit" style="padding:11px">Masuk</button>
     <p class="small faint" style="margin:0">Akun dikunci sementara 5 menit setelah 5 kali salah password. Sesi berakhir otomatis setelah 30 menit tanpa aktivitas.</p>
   </form></section></div>`;
 Views.loginMount = () => {
+  let pick = 'admin';
+  $$('.role-opt').forEach(b => b.onclick = () => {
+    pick = b.dataset.role;
+    $$('.role-opt').forEach(x => { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-checked', on); });
+    $('#roleHint').textContent = LOGIN_ROLES[pick].hint; $('#loginErr').hidden = true; $('#lu').focus();
+  });
+  $('#pwEye').onclick = () => { const i = $('#lp'), show = i.type === 'password'; i.type = show ? 'text' : 'password'; $('#pwEye').textContent = show ? 'Sembunyi' : 'Lihat'; };
+  Views.loginFx();
   $('#loginForm').onsubmit = async e => {
     e.preventDefault();
     const u = $('#lu').value.trim().toLowerCase(), p = $('#lp').value;
@@ -1267,12 +1327,33 @@ Views.loginMount = () => {
     const t = LOCK.tries[u] || { n: 0, until: 0 };
     if (t.until > Date.now()) { err.textContent = `Terlalu banyak percobaan. Coba lagi dalam ${Math.ceil((t.until - Date.now()) / 60000)} menit.`; err.hidden = false; return; }
     const a = Store.all('accounts', x => (x.username || '').toLowerCase() === u)[0];
-    const ok = a && (await sha256(a.salt + ':' + p)) === a.passHash;
-    if (!ok) { t.n++; if (t.n >= LOCK.max) { t.until = Date.now() + LOCK.ms; t.n = 0; } LOCK.tries[u] = t; err.textContent = 'Username atau password salah.'; err.hidden = false; return; }
+    const ok = a && LOGIN_ROLES[pick].roles.includes(a.role) && (await sha256(a.salt + ':' + p)) === a.passHash;
+    if (!ok) { t.n++; if (t.n >= LOCK.max) { t.until = Date.now() + LOCK.ms; t.n = 0; } LOCK.tries[u] = t; err.textContent = `Username atau password salah untuk akun ${LOGIN_ROLES[pick].label}.`; err.hidden = false; return; }
     if (!a.active) { err.textContent = 'Akun dinonaktifkan. Hubungi admin.'; err.hidden = false; return; }
     LOCK.tries[u] = { n: 0, until: 0 };
     App.setUser(a); audit('login'); App.render();
   };
+};
+/* latar animasi layar login: jaringan titik yang bergerak pelan */
+Views.loginFx = () => {
+  const cv = $('#fxCanvas'); if (!cv || !cv.getContext) return;
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const ctx = cv.getContext('2d'); let W = 0, H = 0, pts = [], raf = 0;
+  const cols = ['#6F8BFF', '#22D3C5', '#FFB627', '#F0645A'];
+  const size = () => { const r = cv.parentElement.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2); W = r.width; H = r.height; cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const n = Math.round(Math.min(70, Math.max(24, W * H / 14000))); pts = Array.from({ length: n }, (_, i) => ({ x: Math.random() * W, y: Math.random() * H, vx: (Math.random() - .5) * .35, vy: (Math.random() - .5) * .35, r: 1.4 + Math.random() * 1.8, c: cols[i % 4] })); };
+  const tick = () => {
+    if (!cv.isConnected) { cancelAnimationFrame(raf); removeEventListener('resize', size); return; }
+    if (!document.hidden) {
+      ctx.clearRect(0, 0, W, H);
+      for (const p of pts) { p.x += p.vx; p.y += p.vy; if (p.x < 0 || p.x > W) p.vx *= -1; if (p.y < 0 || p.y > H) p.vy *= -1; }
+      for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) { const a = pts[i], b = pts[j], d = Math.hypot(a.x - b.x, a.y - b.y); if (d < 130) { ctx.strokeStyle = `rgba(160,178,255,${(1 - d / 130) * .32})`; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); } }
+      for (const p of pts) { ctx.fillStyle = p.c; ctx.globalAlpha = .85; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.283); ctx.fill(); }
+      ctx.globalAlpha = 1;
+    }
+    raf = requestAnimationFrame(tick);
+  };
+  size(); addEventListener('resize', size); tick();
 };
 
 Views.changePassword = () => {
