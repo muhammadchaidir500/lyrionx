@@ -621,6 +621,28 @@ body[data-role=user] .side{background:linear-gradient(180deg,#0B6B57 0%,#06382E 
 body.has-demo{padding-bottom:120px}
 html:has(body.has-demo){scroll-padding-bottom:140px}
 @media (max-width:700px){.demo-bar{left:0;right:0;bottom:0;transform:none;border-radius:0;max-width:none;padding:8px 10px;flex-wrap:nowrap}.demo-bar>span{display:none}.demo-bar .btn{flex:1}body.has-demo{padding-bottom:84px}}
+.co-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.co-card h2{font-size:18px}.co-ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--brand-soft);color:var(--brand-text);flex:none}.co-ic svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8}
+.co-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center}.co-stats div{background:var(--surface-2);border-radius:10px;padding:8px 4px}.co-stats b{display:block;font-size:18px}.co-stats span{font-size:11px;color:var(--muted)}
+.cmp{display:grid;gap:7px}.cmp-r{display:grid;grid-template-columns:minmax(80px,130px) 1fr 52px;gap:10px;align-items:center;font-size:13px}.cmp-n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.cmp-t{position:relative;height:16px;background:var(--surface-2);border-radius:8px;overflow:hidden}.cmp-t b{position:absolute;left:0;top:0;bottom:0;border-radius:8px}.cmp-ref{position:absolute;top:-2px;bottom:-2px;border-left:2px dashed var(--ink-muted,#667);z-index:2}.cmp-v{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.pz{min-height:100vh;min-height:100dvh;background:var(--bg);display:flex;flex-direction:column}
+.pz-top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px clamp(14px,4vw,40px);background:linear-gradient(90deg,#0B6B57,#06382E);color:#fff}.pz-top .brandmark{color:#fff}.pz-top .btn{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.35);color:#fff}.pz-top .muted{color:rgba(255,255,255,.8)}
+.pz-main{flex:1;display:flex;justify-content:center;padding:28px clamp(14px,4vw,40px) 48px}
+.pz-wrap{width:100%;max-width:760px;display:flex;flex-direction:column;gap:20px}.pz-intro h1{margin:4px 0 6px;font-size:clamp(24px,4vw,32px)}
+.pz-list{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.pz-item{display:flex;gap:14px;padding:16px;border:1.5px solid var(--line);border-radius:14px;background:var(--surface)}.pz-item.now{border-color:#0E8F74;box-shadow:0 6px 24px rgba(14,143,116,.16)}.pz-item.done{opacity:.75}
+.pz-num{flex:none;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--surface-2);font-weight:800}.pz-item.now .pz-num{background:#0E8F74;color:#fff}.pz-item.done .pz-num{background:var(--ok);color:#fff}
+.pz-steps{margin:4px 0 0;padding-left:20px;display:grid;gap:4px;font-size:14px}
+.pz-cta{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:16px 0 8px}
+.pz-go{font-size:20px!important;padding:18px 44px!important;border-radius:16px!important;background:#0E8F74!important;border-color:#0E8F74!important;box-shadow:0 12px 30px rgba(14,143,116,.35)}
+.pz-done{margin:auto;text-align:center;max-width:520px;display:flex;flex-direction:column;gap:14px;align-items:center;padding:30px 0}.pz-done h1{margin:0}
+.pz-check{width:84px;height:84px;border-radius:50%;display:grid;place-items:center;background:#0E8F74;color:#fff}
+@media (max-width:600px){.cmp-r{grid-template-columns:90px 1fr 44px}.pz-item{padding:12px}.pz-go{width:100%}}
+.pz-item>.stack{flex:1;min-width:0}.pz-more summary{cursor:pointer;color:var(--brand-text);font-weight:700}
+.pz-cta{position:sticky;bottom:0;margin:0 -8px;padding:18px 8px 16px;background:linear-gradient(180deg,rgba(232,236,255,0),var(--bg) 40%)}
+.cmp-r{grid-template-columns:minmax(110px,180px) 1fr 52px!important}
+.pwcell{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.pwcell code{background:var(--surface-2);padding:4px 8px;border-radius:6px;font-size:13px;word-break:break-all}
 </style>
 </head>
 <body>
@@ -1175,9 +1197,35 @@ const Store = {
 };
 
 /* ---------------- Security helpers ---------------- */
+/* SHA-256 murni JS: cadangan bila crypto.subtle tidak tersedia (mis. halaman non-HTTPS atau iframe terbatas) */
+function sha256js(str) {
+  const K = [0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+  const bytes = Array.from(new TextEncoder().encode(str)), l = bytes.length * 8;
+  bytes.push(0x80); while (bytes.length % 64 !== 56) bytes.push(0);
+  for (let i = 7; i >= 0; i--) bytes.push(i >= 4 ? 0 : (l >>> (i * 8)) & 255);
+  let h = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  const rr = (x, n) => (x >>> n) | (x << (32 - n));
+  for (let o = 0; o < bytes.length; o += 64) {
+    const w = new Array(64);
+    for (let i = 0; i < 16; i++) w[i] = (bytes[o + i * 4] << 24) | (bytes[o + i * 4 + 1] << 16) | (bytes[o + i * 4 + 2] << 8) | bytes[o + i * 4 + 3];
+    for (let i = 16; i < 64; i++) { const s0 = rr(w[i - 15], 7) ^ rr(w[i - 15], 18) ^ (w[i - 15] >>> 3), s1 = rr(w[i - 2], 17) ^ rr(w[i - 2], 19) ^ (w[i - 2] >>> 10); w[i] = (w[i - 16] + s0 + w[i - 7] + s1) | 0; }
+    let [a, b, c, d, e, f, g, hh] = h;
+    for (let i = 0; i < 64; i++) {
+      const S1 = rr(e, 6) ^ rr(e, 11) ^ rr(e, 25), ch = (e & f) ^ (~e & g), t1 = (hh + S1 + ch + K[i] + w[i]) | 0, S0 = rr(a, 2) ^ rr(a, 13) ^ rr(a, 22), mj = (a & b) ^ (a & c) ^ (b & c), t2 = (S0 + mj) | 0;
+      hh = g; g = f; f = e; e = (d + t1) | 0; d = c; c = b; b = a; a = (t1 + t2) | 0;
+    }
+    h = [(h[0] + a) | 0, (h[1] + b) | 0, (h[2] + c) | 0, (h[3] + d) | 0, (h[4] + e) | 0, (h[5] + f) | 0, (h[6] + g) | 0, (h[7] + hh) | 0];
+  }
+  return h.map(x => (x >>> 0).toString(16).padStart(8, '0')).join('');
+}
 async function sha256(s) {
-  const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
-  return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
+  try {
+    if (window.crypto && crypto.subtle) {
+      const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+      return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
+    }
+  } catch (e) {}
+  return sha256js(s);
 }
 const randSalt = () => Math.random().toString(36).slice(2, 8);
 const LOCK = { tries: {}, max: 5, ms: 5 * 60 * 1000 };
@@ -1358,24 +1406,26 @@ const NAV = [
   { id: 'mytests', label: 'Tes Saya', icon: 'test', roles: [US] },
   { id: 'dash', label: 'Beranda', icon: 'home', roles: [SA, CO] },
   { id: 'exec', label: 'Dashboard Eksekutif', icon: 'chart', roles: [SA, CO] },
-  { id: 'kerjakan', label: 'Kerjakan Psikotes', icon: 'test', roles: [SA, CO], group: 'Rekrutmen' },
-  { id: 'candidates', label: 'Hasil Psikotes DISC', icon: 'brain', roles: [SA, CO], group: 'Rekrutmen' },
-  { id: 'ist', label: 'Hasil Psikotes IST', icon: 'chart', roles: [SA, CO], group: 'Rekrutmen' },
-  { id: 'skilltests', label: 'Tes Kemampuan Unit', icon: 'skill', roles: [SA, CO], group: 'Rekrutmen' },
+  { id: 'participants', label: 'Daftar Peserta', icon: 'users', roles: [SA, CO], group: 'Rekrutmen' },
   { id: 'meetings', label: 'Wawancara Online', icon: 'video', roles: [SA, CO], group: 'Rekrutmen' },
+  { id: 'cmppsy', label: 'Daftar Hasil Psikotes', icon: 'brain', roles: [SA, CO], group: 'Rekrutmen' },
+  { id: 'cmpskill', label: 'Daftar Hasil Kemampuan Unit', icon: 'skill', roles: [SA, CO], group: 'Rekrutmen' },
   { id: 'employees', label: 'Data Karyawan', icon: 'users', roles: [SA, CO], group: 'Kepegawaian' },
   { id: 'overtime', label: 'Lembur', icon: 'clock', roles: [SA, CO], group: 'Kepegawaian' },
   { id: 'leaves', label: 'Cuti', icon: 'cal', roles: [SA, CO], group: 'Kepegawaian' },
   { id: 'payroll', label: 'Payroll', icon: 'money', roles: [SA, CO], group: 'Kepegawaian' },
   { id: 'accounts', label: 'Akun Pengguna', icon: 'key', roles: [SA, CO], group: 'Pengaturan' },
+  { id: 'skilltests', label: 'Soal Tes Kemampuan Unit', icon: 'skill', roles: [SA, CO], group: 'Pengaturan' },
   { id: 'settings', label: 'Pengaturan Perusahaan', icon: 'gear', roles: [SA, CO], group: 'Pengaturan' },
-  { id: 'companies', label: 'Master Perusahaan', icon: 'building', roles: [SA], group: 'Master' },
+  { id: 'companies', label: 'Daftar Perusahaan', icon: 'building', roles: [SA], group: 'Master' },
   { id: 'master', label: 'Master Data Psikotes', icon: 'book', roles: [SA], group: 'Master' },
   { id: 'audit', label: 'Log Aktivitas', icon: 'log', roles: [SA], group: 'Master' }
 ];
-const HIDDEN_ROUTES = { 'company': [SA], 'candidate': [SA, CO], 'disc-take': [US], 'skill-take': [US], 'test-edit': [SA, CO], 'test-results': [SA, CO], 'istresult': [SA, CO], 'myresult': [US] };
+/* halaman yang boleh dibuka Super Admin sebelum masuk ke perusahaan */
+const SA_OUTSIDE = ['companies', 'company', 'master', 'audit'];
+const HIDDEN_ROUTES = { 'company': [SA], 'candidate': [SA, CO], 'disc-take': [US], 'skill-take': [US], 'test-edit': [SA, CO], 'test-results': [SA, CO], 'istresult': [SA, CO], 'myresult': [US], 'candidates': [SA, CO], 'ist': [SA, CO], 'kerjakan': [SA, CO] };
 function canRoute(r) { const n = NAV.find(x => x.id === r); const roles = n ? n.roles : HIDDEN_ROUTES[r]; return !!(roles && S.user && roles.includes(S.user.role)); }
-const navOn = n => S.route === n.id || (S.route === 'candidate' && n.id === 'candidates') || (S.route === 'company' && n.id === 'companies') || (S.route === 'istresult' && n.id === 'ist') || (S.route === 'myresult' && n.id === 'mytests') || ((S.route === 'test-edit' || S.route === 'test-results') && n.id === 'skilltests');
+const navOn = n => S.route === n.id || (S.route === 'company' && n.id === 'companies') || (['candidate', 'candidates', 'istresult', 'ist', 'kerjakan'].includes(S.route) && n.id === 'participants') || (S.route === 'myresult' && n.id === 'mytests') || ((S.route === 'test-edit' || S.route === 'test-results') && n.id === 'skilltests');
 const inScope = x => S.user.role === SA ? x.companyId === S.companyId : x.companyId === S.user.companyId;
 const icon = k => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICON[k] || ''}</svg>`;
 
@@ -1438,22 +1488,25 @@ const App = {
   async start() {
     await Store.init();
     if (typeof istEnsureSamples === 'function') await istEnsureSamples();
-    try { const s = sessionStorage.getItem('hrs:session'); if (s) { const o = JSON.parse(s); const a = Store.get('accounts', o.id); if (a && a.active && Date.now() - o.t < 30 * 60 * 1000) this.setUser(a, o.cid); } } catch (e) {}
+    /* catat password awal akun bawaan agar Super Admin bisa melihatnya (hanya bila belum pernah diganti) */
+    try { for (const a of Store.all('accounts')) { if (a.initPass || !a.salt) continue; for (const pw of ['Admin#2026', 'Unimedika#2026', 'Kandidat#2026', 'Contoh#2026', 'Demo#2026']) { if ((await sha256(a.salt + ':' + pw)) === a.passHash) { await Store.put('accounts', a.id, { ...a, initPass: pw }); break; } } } } catch (e) { console.warn('initPass', e); }
+    try { const s = sessionStorage.getItem('hrs:session'); if (s) { const o = JSON.parse(s); const a = Store.get('accounts', o.id); if (a && a.active && Date.now() - o.t < 30 * 60 * 1000) this.setUser(a, o.cid, o.ic); } } catch (e) {}
     ['click', 'keydown', 'input'].forEach(ev => document.addEventListener(ev, () => { S.lastActive = Date.now(); this.saveSession(); }, { passive: true }));
     setInterval(() => { if (S.user && !S.test && Date.now() - S.lastActive > 30 * 60 * 1000) { this.logout('Sesi berakhir karena tidak ada aktivitas selama 30 menit.'); } }, 30000);
     this.render();
   },
-  setUser(a, cid) {
-    S.user = a;
+  setUser(a, cid, inCo) {
+    S.user = a; S.inCompany = a.role === SA ? !!inCo : true;
     S.companyId = a.role === SA ? (cid && Store.get('companies', cid) ? cid : (Store.all('companies')[0]?.id || null)) : a.companyId;
-    S.route = a.role === US ? 'mytests' : 'dash';
+    S.route = a.role === US ? 'mytests' : a.role === SA && !S.inCompany ? 'companies' : 'dash';
     this.saveSession();
   },
-  saveSession() { if (!S.user) return; try { sessionStorage.setItem('hrs:session', JSON.stringify({ id: S.user.id, cid: S.companyId, t: Date.now() })); } catch (e) {} },
+  saveSession() { if (!S.user) return; try { sessionStorage.setItem('hrs:session', JSON.stringify({ id: S.user.id, cid: S.companyId, ic: !!S.inCompany, t: Date.now() })); } catch (e) {} },
   logout(msg) { if (S.user) audit('logout'); try { closeModal(); } catch (e) {} S.user = null; S.test = null; try { sessionStorage.removeItem('hrs:session'); } catch (e) {} this.render(); if (msg) toast(msg); },
   go(route, params = {}) {
     if (S.test && !route.endsWith('-take')) { toast('Selesaikan tes terlebih dahulu.'); return; }
-    S.route = route; S.params = params; this.render(); window.scrollTo(0, 0);
+    if (S.user.role === SA && route === 'companies') S.inCompany = false;
+    S.route = route; S.params = params; this.saveSession(); this.render(); window.scrollTo(0, 0);
   },
   onRemoteChange(col) {
     if (!S.user) return;
@@ -1469,10 +1522,10 @@ const App = {
     document.body.classList.toggle('has-user', !!S.user); document.body.dataset.role = S.user ? S.user.role : 'guest';
     if (!S.user) { app.innerHTML = Views.login(); Views.loginMount(); return; }
     if (S.test) { this.renderTest(); return; }
-    const groups = []; NAV.filter(n => n.roles.includes(S.user.role)).forEach(n => { const g = n.group || ''; let grp = groups.find(x => x.g === g); if (!grp) groups.push(grp = { g, items: [] }); grp.items.push(n); });
+    const groups = []; NAV.filter(n => n.roles.includes(S.user.role) && (S.user.role !== SA || S.inCompany || SA_OUTSIDE.includes(n.id) || n.id === 'dash' && false)).forEach(n => { const g = n.group || ''; let grp = groups.find(x => x.g === g); if (!grp) groups.push(grp = { g, items: [] }); grp.items.push(n); });
     const navHtml = groups.map(g => `<div class="nav-group">${g.g ? `<div class="eyebrow">${esc(g.g)}</div>` : ''}${g.items.map(n => `<button class="nav-item ${navOn(n) ? 'on' : ''}" data-go="${n.id}" title="${esc(n.label)}" aria-label="${esc(n.label)}">${icon(n.icon)}<span>${esc(n.label)}</span></button>`).join('')}</div>`).join('');
     const comps = Store.all('companies');
-    const compSel = S.user.role === SA ? `<label class="row small muted" style="gap:6px">Perusahaan aktif <select class="input" id="compSel" style="width:auto;padding:6px 10px">${comps.map(c => `<option value="${c.id}" ${c.id === S.companyId ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select></label>`
+    const compSel = S.user.role === SA && !S.inCompany ? '<span class="pill info">Pilih perusahaan untuk dilihat</span>' : S.user.role === SA ? `<button class="btn sm" data-go="companies">\u2190 Daftar Perusahaan</button><label class="row small muted" style="gap:6px">Perusahaan aktif <select class="input" id="compSel" style="width:auto;padding:6px 10px">${comps.map(c => `<option value="${c.id}" ${c.id === S.companyId ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select></label>`
       : S.user.role === CO ? `<span class="pill info">${esc(Store.get('companies', S.user.companyId)?.name || '')}</span>` : '';
     const cur = NAV.find(n => n.id === S.route) || { label: { candidate: 'Detail Hasil Psikotes', company: 'Detail Perusahaan', 'test-edit': 'Tes Kemampuan Unit', 'test-results': 'Tes Kemampuan Unit', istresult: 'Hasil Psikotes IST', myresult: 'Hasil Saya' }[S.route] || '' };
     app.innerHTML = `<div class="shell">
@@ -1511,10 +1564,11 @@ const App = {
   },
   renderContent() {
     const c = $('#content'); if (!c) return;
+    if (S.user.role === SA && !S.inCompany && !SA_OUTSIDE.includes(S.route)) S.route = 'companies';
     if (!canRoute(S.route)) { c.innerHTML = `<div class="card card-pad"><h2>Akses ditolak</h2><p class="muted">Peran ${esc(ROLE_LABEL[S.user.role])} tidak memiliki akses ke halaman ini.</p></div>`; return; }
     const v = Views[S.route.replace(/-(\w)/g, (_, x) => x.toUpperCase())];
     c.innerHTML = v ? v() : '<p>Halaman tidak ditemukan</p>';
-    if (S.route !== 'dash') c.insertAdjacentHTML('afterbegin', '<div class="back-row"><button class="btn sm back-home" data-go="dash" aria-label="Kembali ke Beranda">\u2190 Kembali ke Beranda</button></div>');
+    if (S.route !== 'dash' && !(S.user.role === SA && !S.inCompany && S.route === 'companies')) c.insertAdjacentHTML('afterbegin', '<div class="back-row"><button class="btn sm back-home" data-go="dash" aria-label="Kembali ke Beranda">\u2190 Kembali ke Beranda</button></div>');
     const m = Views[S.route.replace(/-(\w)/g, (_, x) => x.toUpperCase()) + 'Mount']; m && m(c);
     $$('[data-go]', c).forEach(b => b.onclick = () => this.go(b.dataset.go, b.dataset.p ? JSON.parse(b.dataset.p) : {}));
     stackTables(c);
@@ -1561,58 +1615,49 @@ const PAPERLESS = [
   [ICO('<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>'), 'Lebih cepat dan akurat.', 'Skor DISC dihitung otomatis, hasil langsung siap dibaca tanpa input ulang.'],
   [ICO('<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/>'), 'Data rapi dan aman.', 'Arsip terpusat, mudah dicari, dan hanya dibuka oleh pihak yang berwenang.']
 ];
-Views.login = () => { const k0 = (() => { try { const q = new URLSearchParams(location.search).get('role'); return LOGIN_ROLES[q] ? q : 'admin'; } catch (e) { return 'admin'; } })(); return `<div class="login-wrap" data-lrole="${k0}">
+Views.login = () => { const k0 = (() => { try { const q = new URLSearchParams(location.search).get('role'); return LOGIN_ROLES[q] ? q : 'admin'; } catch (e) { return 'admin'; } })(); return `<div class="login-wrap" data-lrole="all">
   <canvas class="fx-canvas" id="fxCanvas" aria-hidden="true"></canvas>
   <div class="fx-orbs" aria-hidden="true"><i></i><i></i><i></i></div>
   <section class="login-side">
     <div class="stack rise" style="gap:4px;--d:.05s"><div class="brandmark"><img class="brand-logo" src="${LOGO_UM}" alt="Logo RS Unimedika">Unimedika HR Suite</div><div class="small" style="color:var(--ink-muted);padding-left:46px">RS Unimedika Setu Bekasi</div></div>
-    <div class="stack" style="gap:16px"><span class="role-badge rise" id="roleBadge" style="--d:.1s">${LOGIN_ROLES[k0].label}</span><h1 class="rise" id="sideH" style="--d:.15s">${LOGIN_ROLES[k0].side}</h1>
-      <p class="rise" id="sideP" style="--d:.28s">${LOGIN_ROLES[k0].sub}</p></div>
+    <div class="stack" style="gap:16px"><h1 class="rise" id="sideH" style="--d:.15s">Rekrutmen, psikotes, dan payroll dalam satu tempat.</h1>
+      <p class="rise" id="sideP" style="--d:.28s">Psikotes DISC dan IST dengan skor otomatis, tes kompetensi per unit kerja, jadwal wawancara Zoom/Google Meet, serta lembur, cuti, dan gaji karyawan.</p></div>
     <div class="paperless rise" style="--d:.4s"><div class="eyebrow">Manfaat rekrutmen digital tanpa kertas</div>
       <ul>${PAPERLESS.map(([i, t, d]) => `<li><span class="pi">${i}</span><span><b>${t}</b> ${d}</span></li>`).join('')}</ul></div>
   </section>
   <section class="login-main"><div class="login-stack"><a class="lx-pill rise" style="--d:.1s" href="https://lyrionx.com" target="_blank" rel="noopener" aria-label="LyrionX.Co - lyrionx.com"><img src="${LOGO_LX_MARK}" alt=""><span><b>LyrionX.Co</b><small>lyrionx.com</small></span></a><form class="login-card rise" style="--d:.2s" id="loginForm" autocomplete="on">
-    <div><h1 style="font-size:24px" id="loginTitle">${LOGIN_ROLES[k0].title}</h1><p class="muted" style="margin:4px 0 0">Pilih jenis akun, lalu masukkan data login dari HRD.</p></div>
-    <div class="role-pick" role="radiogroup" aria-label="Jenis akun">
-      ${Object.entries(LOGIN_ROLES).map(([k, r], i) => `<button type="button" class="role-opt ${k === k0 ? 'on' : ''}" role="radio" aria-checked="${k === k0}" data-role="${k}"><span class="ri" aria-hidden="true">${k === 'super' ? '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>' : k === 'admin' ? '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-5h6v5M9 10h.01M12 10h.01M15 10h.01"/></svg>' : '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>'}</span><b>${r.label}</b></button>`).join('')}
-    </div>
-    <p class="small muted role-hint" id="roleHint" style="margin:-6px 0 0">${LOGIN_ROLES[k0].hint}</p>
+    <div><h1 style="font-size:24px" id="loginTitle">Masuk</h1><p class="muted" style="margin:4px 0 0">Pilih jenis akun, lalu masukkan data login dari HRD.</p></div>
     <label class="f">Username<input class="input" id="lu" name="u" autocomplete="username" required></label>
     <div class="f"><label for="lp" style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">Password<button type="button" class="link-btn" id="forgotBtn">Lupa password?</button></label><span class="pw-wrap"><input class="input" id="lp" name="p" type="password" autocomplete="current-password" required><button type="button" class="pw-eye" id="pwEye" aria-label="Tampilkan password">Lihat</button></span></div>
     <div id="loginErr" class="note bad" hidden></div>
     <button class="btn primary" type="submit" style="padding:11px">Masuk</button>
     <div class="or-line"><span>Belum punya akun?</span></div>
     <button class="btn" type="button" id="regBtn" style="padding:11px">Daftar akun</button>
-    <button class="btn demo-btn" type="button" id="demoBtn" style="padding:11px" hidden>Coba simulasi peserta (isi otomatis)</button>
+    <button class="link-btn" type="button" id="demoBtn" style="align-self:center">Coba simulasi peserta (isi otomatis)</button>
     <p class="small faint" style="margin:0">Akun dikunci sementara 5 menit setelah 5 kali salah password. Sesi berakhir otomatis setelah 30 menit tanpa aktivitas.</p>
   </form></div></section></div>`; };
 Views.loginMount = () => {
-  let pick = $('.login-wrap').dataset.lrole;
-  const applyRole = () => { const R = LOGIN_ROLES[pick]; $('.login-wrap').dataset.lrole = pick; $('#loginTitle').textContent = R.title; $('#roleHint').textContent = R.hint; $('#roleBadge').textContent = R.label; $('#sideH').textContent = R.side; $('#sideP').textContent = R.sub; $('#regBtn').hidden = pick === 'super'; $('#demoBtn').hidden = pick !== 'peserta'; document.title = 'Unimedika HR Suite · ' + R.label; };
-  setTimeout(applyRole, 0);
-  $$('.role-opt').forEach(b => b.onclick = () => {
-    pick = b.dataset.role;
-    $$('.role-opt').forEach(x => { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-checked', on); });
-    applyRole(); $('#loginErr').hidden = true; $('#lu').focus();
-  });
+  const pick = 'peserta';
+  $('#roleHint') && 0;
   $('#pwEye').onclick = () => { const i = $('#lp'), show = i.type === 'password'; i.type = show ? 'text' : 'password'; $('#pwEye').textContent = show ? 'Sembunyi' : 'Lihat'; };
   $('#forgotBtn').onclick = () => Views.forgotPassword($('#lu').value.trim());
-  $('#regBtn').onclick = () => Views.registerAccount(pick === 'peserta' ? 'peserta' : 'admin');
+  $('#regBtn').onclick = () => Views.registerAccount('peserta');
   $('#demoBtn').onclick = () => Demo.start();
   Views.loginFx();
-  $('#loginForm').onsubmit = async e => {
+  $('#loginForm').onsubmit = async e => { try { await loginSubmit(e); } catch (er) { const x = $('#loginErr'); x.textContent = 'Terjadi kesalahan saat masuk: ' + (er && er.message || er); x.hidden = false; console.error(er); } };
+  const loginSubmit = async e => {
     e.preventDefault();
     const u = $('#lu').value.trim().toLowerCase(), p = $('#lp').value;
     const err = $('#loginErr'); err.hidden = true;
     const t = LOCK.tries[u] || { n: 0, until: 0 };
     if (t.until > Date.now()) { err.textContent = `Terlalu banyak percobaan. Coba lagi dalam ${Math.ceil((t.until - Date.now()) / 60000)} menit.`; err.hidden = false; return; }
     const a = Store.all('accounts', x => (x.username || '').toLowerCase() === u)[0];
-    const ok = a && LOGIN_ROLES[pick].roles.includes(a.role) && (await sha256(a.salt + ':' + p)) === a.passHash;
-    if (!ok) { t.n++; if (t.n >= LOCK.max) { t.until = Date.now() + LOCK.ms; t.n = 0; } LOCK.tries[u] = t; const pwOk = a && (await sha256(a.salt + ':' + p)) === a.passHash; const other = pwOk && !LOGIN_ROLES[pick].roles.includes(a.role) ? Object.values(LOGIN_ROLES).find(r => r.roles.includes(a.role)) : null; err.textContent = other ? `Akun ini terdaftar sebagai ${other.label}. Pilih jenis akun ${other.label} di atas, lalu masuk lagi.` : `Username atau password salah untuk akun ${LOGIN_ROLES[pick].label}.`; err.hidden = false; return; }
+    const ok = a && (await sha256(a.salt + ':' + p)) === a.passHash;
+    if (!ok) { t.n++; if (t.n >= LOCK.max) { t.until = Date.now() + LOCK.ms; t.n = 0; } LOCK.tries[u] = t; err.textContent = 'Username atau password salah.'; err.hidden = false; return; }
     if (a.pending) { err.textContent = 'Pendaftaran akun Anda masih menunggu persetujuan. Hubungi Super Admin atau HRD.'; err.hidden = false; return; }
     if (!a.active) { err.textContent = 'Akun dinonaktifkan. Hubungi admin.'; err.hidden = false; return; }
     LOCK.tries[u] = { n: 0, until: 0 };
-    App.setUser(a); audit('login'); App.render(); showWelcome(a.name);
+    App.setUser(a); audit('login'); App.render(); if (a.role !== US) showWelcome(a.name);
   };
 };
 /* lupa password: permintaan diteruskan ke Super Admin untuk diverifikasi */
@@ -1702,7 +1747,7 @@ Views.changePassword = () => {
       if ((await sha256(a.salt + ':' + d.old)) !== a.passHash) { er.textContent = 'Password lama salah.'; er.hidden = false; return; }
       const iss = pwIssues(d.n1); if (iss.length) { er.textContent = 'Password baru belum memenuhi: ' + iss.join(', ') + '.'; er.hidden = false; return; }
       if (d.n1 !== d.n2) { er.textContent = 'Ulangan password tidak sama.'; er.hidden = false; return; }
-      const salt = randSalt(); await Store.put('accounts', a.id, { ...a, salt, passHash: await sha256(salt + ':' + d.n1) });
+      const salt = randSalt(), { initPass, ...a2 } = a; await Store.put('accounts', a.id, { ...a2, salt, passHash: await sha256(salt + ':' + d.n1) });
       S.user = Store.get('accounts', a.id); audit('ganti password'); closeModal(); toast('Password diperbarui');
     }; } });
 };
@@ -1841,7 +1886,7 @@ const Test = {
         </div>
         <div class="xl-grid" id="xlGrid">${order.map(i => this.xlCard(i)).join('')}</div>
         <div class="card card-pad xl-foot"><div id="xlCheck" aria-live="polite">${this.xlCheck()}</div>
-          <button class="btn accent" id="xlSubmit" style="padding:11px 18px">${t.admin ? 'Selesai &amp; lihat hasil' : 'Selesai &amp; kirim jawaban'}</button></div>
+          <button class="btn accent" id="xlSubmit" style="padding:11px 18px">${t.admin ? 'Selesai &amp; lihat hasil' : 'Selesai mengerjakan'}</button></div>
       </div>`;
     $('#xlGrid').addEventListener('click', e => {
       const b = e.target.closest('[data-x]'); if (!b) return;
@@ -1884,9 +1929,9 @@ const Test = {
     }
     body.innerHTML = `${q}
       <div class="row" style="justify-content:space-between"><button class="btn" id="prevQ" ${i === 0 ? 'disabled' : ''}>← Sebelumnya</button>
-        ${i < n - 1 ? '<button class="btn primary" id="nextQ">Berikutnya →</button>' : '<button class="btn accent" id="finish">Selesai &amp; kirim</button>'}</div>
+        ${i < n - 1 ? '<button class="btn primary" id="nextQ">Berikutnya →</button>' : '<button class="btn accent" id="finish">Selesai mengerjakan</button>'}</div>
       <div class="card card-pad stack"><div class="eyebrow">Navigasi soal</div><div class="qnav">${t.sess.answers.map((_, k) => `<button class="${this.answered(k) === 2 ? 'done' : this.answered(k) === 1 ? 'half' : ''} ${k === i ? 'cur' : ''}" data-q="${k}" aria-label="Soal ${k + 1}">${k + 1}</button>`).join('')}</div>
-        <div class="row" style="justify-content:space-between"><span class="small muted">Hijau = lengkap · Kuning = belum lengkap</span><button class="btn sm" id="finish2">Selesai &amp; kirim</button></div></div>`;
+        <div class="row" style="justify-content:space-between"><span class="small muted">Hijau = lengkap · Kuning = belum lengkap</span><button class="btn sm" id="finish2">Selesai mengerjakan</button></div></div>`;
     $$('[data-pk]', body).forEach(b => b.onclick = () => {
       const k = +b.dataset.pk, j = +b.dataset.j; const a = t.sess.answers[i] ? [...t.sess.answers[i]] : [null, null];
       a[k] = a[k] === j ? null : j; if (a[1 - k] === j) a[1 - k] = null;
@@ -1925,9 +1970,7 @@ const Test = {
     } catch (e) { t.submitting = false; toast('Gagal mengirim. Periksa koneksi lalu tekan kirim lagi.'); return; }
     S.user = Store.get('accounts', a.id) || S.user;
     if (t.admin) { S.test = null; S.route = 'candidate'; S.params = { id: newId }; App.render(); window.scrollTo(0, 0); toast(timedOut ? 'Waktu habis — jawaban otomatis diproses' : 'Hasil psikotes tersimpan'); return; }
-    S.test = null; S.route = 'mytests'; App.render();
-    if (t.kind === 'disc' && settingsOf(a.companyId).showResults !== false) { App.go('myresult', { type: 'disc', id: newId }); toast('Jawaban terkirim. Berikut hasil Anda.'); return; }
-    openModal({ title: timedOut ? 'Waktu habis' : 'Jawaban terkirim', body: `<p style="margin:0">${timedOut ? 'Waktu pengerjaan telah habis dan jawaban Anda otomatis dikirim.' : 'Terima kasih. Jawaban Anda sudah kami terima.'} HRD akan menghubungi Anda untuk tahap selanjutnya.</p>`, foot: '<button class="btn primary" data-close>Tutup</button>' });
+    S.test = null; S.route = 'mytests'; App.render(); window.scrollTo(0, 0);
   }
 };
 
@@ -2743,7 +2786,7 @@ function accountForm(a = {}) {
         if (d.pw) { const iss = pwIssues(d.pw); if (iss.length) { er.textContent = 'Password belum memenuhi: ' + iss.join(', ') + '.'; er.hidden = false; return; } }
         const role = isSA ? d.role : US;
         const body = { ...(a.id ? Store.get('accounts', a.id) : { active: true, createdAt: todayISO() }), name: d.name, username, role, companyId: role === SA ? null : (isSA ? d.companyId : S.user.companyId), unit: d.unit || '', position: d.position || '', discAllowed: d.discAllowed === '1', istAllowed: d.istAllowed === '1', tests: tests.filter(t => f['t_' + t.id]?.checked).map(t => t.id), sample: false };
-        if (d.pw) { body.salt = randSalt(); body.passHash = await sha256(body.salt + ':' + d.pw); }
+        if (d.pw) { body.salt = randSalt(); body.passHash = await sha256(body.salt + ':' + d.pw); body.initPass = d.pw; }
         const id = a.id || uid('u'); await Store.put('accounts', id, body); audit(a.id ? 'ubah akun' : 'buat akun', username + ' (' + role + ')');
         closeModal(); App.renderContent(); toast('Akun disimpan');
         if (!a.id) openModal({ title: 'Akun dibuat', body: `<p style="margin:0">Kirimkan data login ini kepada ${esc(d.name)} melalui saluran yang aman:</p><div class="card card-pad mono" style="white-space:pre-wrap">Username : ${esc(username)}\nPassword : ${esc(d.pw)}</div>`, foot: `<button class="btn" id="cpy">Salin</button><button class="btn primary" data-close>Selesai</button>`, onMount: rr => $('#cpy', rr).onclick = () => copyText(`Username: ${username}\nPassword: ${d.pw}`) });
@@ -2777,7 +2820,7 @@ function reqMount(c) {
   $$('[data-rst]', c).forEach(b => b.onclick = async () => {
     const a = Store.get('accounts', b.dataset.rst); if (!(await confirmBox(`Buat password sementara untuk ${esc(a.username)}? Password lama tidak berlaku lagi.`, 'Buat password'))) return;
     const pw = tmpPw(), salt = randSalt(), { resetRequest, ...rest } = a;
-    await Store.put('accounts', a.id, { ...rest, salt, passHash: await sha256(salt + ':' + pw) }); audit('reset password', a.username); App.renderContent();
+    await Store.put('accounts', a.id, { ...rest, salt, passHash: await sha256(salt + ':' + pw), initPass: pw }); audit('reset password', a.username); App.renderContent();
     openModal({ title: 'Password sementara dibuat', body: `<p style="margin:0">Kirim data ini kepada ${esc(a.name)} melalui saluran yang aman, lalu minta ia menggantinya lewat <b>Ganti password</b>:</p><div class="card card-pad mono" style="white-space:pre-wrap">Username : ${esc(a.username)}\nPassword : ${esc(pw)}</div>`, foot: '<button class="btn" id="cpy">Salin</button><button class="btn primary" data-close>Selesai</button>', onMount: rr => $('#cpy', rr).onclick = () => copyText(`Username: ${a.username}\nPassword: ${pw}`) });
   });
 }
@@ -2798,7 +2841,7 @@ Views.settings = () => {
       <label class="f">Hak cuti tahunan (hari)<input class="input" id="s_al" type="number" min="12" max="30" value="${st.annualLeave || 12}"></label>
       <label class="f">Nama penandatangan HR (laporan PDF)<input class="input" id="s_sn" value="${esc(st.signerName || '')}" placeholder="mis. dr. Nama Lengkap"></label>
       <label class="f">Jabatan penandatangan<input class="input" id="s_st" value="${esc(st.signerTitle || '')}" placeholder="mis. Kepala HRD"></label>
-      <label class="f">Peserta melihat hasil psikotes (DISC dan IST)<select class="input" id="s_show"><option value="1" ${st.showResults !== false ? 'selected' : ''}>Ya (tanpa rekomendasi dan keputusan HRD)</option><option value="0" ${st.showResults === false ? 'selected' : ''}>Tidak</option></select></label>
+
     </div></div>
     <div class="card card-pad stack"><h3>BPJS</h3><div class="form-grid">
       ${[['kesEmp', 'Kesehatan – karyawan %'], ['kesCo', 'Kesehatan – perusahaan %'], ['kesCap', 'Batas upah Kesehatan (Rp)'], ['jhtEmp', 'JHT – karyawan %'], ['jhtCo', 'JHT – perusahaan %'], ['jpEmp', 'JP – karyawan %'], ['jpCo', 'JP – perusahaan %'], ['jpCap', 'Batas upah JP (Rp)'], ['jkk', 'JKK – perusahaan %'], ['jkm', 'JKM – perusahaan %']].map(([k, l]) => `<label class="f">${l}<input class="input" data-bp="${k}" type="number" step="0.01" min="0" value="${st.bpjs[k]}"></label>`).join('')}
@@ -2833,7 +2876,7 @@ Views.settingsMount = c => {
     sync();
     st.units = st.units.filter(u => u.name);
     st.signerName = $('#s_sn', c).value.trim(); st.signerTitle = $('#s_st', c).value.trim();
-    st.discMinutes = clamp(+$('#s_disc', c).value || 15, 5, 60); st.workDays = +$('#s_wd', c).value; st.annualLeave = +$('#s_al', c).value || 12; st.showResults = $('#s_show', c).value === '1';
+    st.discMinutes = clamp(+$('#s_disc', c).value || 15, 5, 60); st.workDays = +$('#s_wd', c).value; st.annualLeave = +$('#s_al', c).value || 12; 
     $$('[data-bp]', c).forEach(i => st.bpjs[i.dataset.bp] = +i.value || 0);
     const comp = Store.get('companies', S.companyId); await Store.put('companies', comp.id, { ...comp, settings: st }); audit('ubah pengaturan perusahaan'); toast('Pengaturan disimpan'); App.renderContent();
   };
@@ -2866,8 +2909,8 @@ Views.company = () => {
   const accs = Store.all('accounts', a => a.companyId === c.id).sort((a, b) => (order[a.role] ?? 9) - (order[b.role] ?? 9) || a.name.localeCompare(b.name));
   const nAdmin = accs.filter(a => a.role === CO).length, nUser = accs.filter(a => a.role === US).length;
   const nEmp = Store.all('employees', e => e.companyId === c.id).length, nRes = Store.all('disc_results', e => e.companyId === c.id).length;
-  return `<div class="page-head"><div><button class="btn ghost sm" data-go="companies">← Master perusahaan</button><h1 style="margin-top:8px">${esc(c.name)}</h1><p>${esc(c.address || '')}</p></div>
-    <div class="row"><button class="btn" id="cAct" ${c.id === S.companyId ? 'disabled' : ''}>${c.id === S.companyId ? 'Perusahaan aktif' : 'Jadikan aktif'}</button><button class="btn primary" id="cAdd">+ Akun di perusahaan ini</button></div></div>
+  return `<div class="page-head"><div><button class="btn ghost sm" data-go="companies">← Daftar Perusahaan</button><h1 style="margin-top:8px">${esc(c.name)}</h1><p>${esc(c.address || '')}</p></div>
+    <div class="row"><button class="btn" id="cAct">Masuk ke perusahaan ini</button><button class="btn primary" id="cAdd">+ Akun di perusahaan ini</button></div></div>
   <div class="grid g4">
     <div class="card kpi k-blue"><span class="eyebrow">Akun terdaftar</span><b>${accs.length}</b><span class="small">di perusahaan ini</span></div>
     <div class="card kpi k-teal"><span class="eyebrow">Admin perusahaan</span><b>${nAdmin}</b><span class="small">akun pengelola</span></div>
@@ -2875,19 +2918,27 @@ Views.company = () => {
     <div class="card kpi k-orange"><span class="eyebrow">Karyawan · Hasil tes</span><b>${nEmp} · ${nRes}</b><span class="small">data karyawan · hasil psikotes</span></div>
   </div>
   <div class="card"><div class="card-head"><h3>Akun yang terdaftar</h3><span class="small muted">${accs.length} akun</span></div>
-  ${accs.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Nama</th><th>Username</th><th>Peran</th><th>Unit / posisi</th><th>Status tes</th><th>Status</th><th></th></tr></thead><tbody>
+  ${accs.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Nama</th><th>Username</th><th>Peran</th><th>Unit / posisi</th><th>Status tes</th><th>Password awal</th><th>Status</th><th></th></tr></thead><tbody>
     ${accs.map(a => { const done = Store.all('disc_results', r => r.accountId === a.id).length; return `<tr><td><b>${esc(a.name)}</b>${sampleTag(a)}</td><td class="mono small">${esc(a.username)}</td><td><span class="pill ${a.role === CO ? 'info' : ''}">${ROLE_LABEL[a.role]}</span></td><td>${esc(a.unit || '–')}<div class="small muted">${esc(a.position || '')}</div></td>
       <td class="small">${a.role === US ? (a.discAllowed ? '<span class="pill ok">DISC dibuka</span>' : done ? '<span class="pill">DISC selesai</span>' : '<span class="pill">DISC tertutup</span>') : '–'}</td>
+      <td>${a.initPass ? `<div class="pwcell"><code class="mono" data-pwv="${a.id}" data-shown="0">••••••••••</code><button class="btn sm" data-pweye="${a.id}" aria-label="Tampilkan password">Lihat</button><button class="btn sm" data-pwcopy="${a.id}" aria-label="Salin password">Salin</button></div>` : '<div class="small muted">Sudah diganti pengguna<br>atau tidak tercatat</div>'}<button class="btn sm" data-newpw="${a.id}" style="margin-top:4px">Buat password baru</button></td>
       <td>${a.active ? '<span class="pill ok">Aktif</span>' : '<span class="pill bad">Nonaktif</span>'}</td>
       <td><div class="row" style="flex-wrap:nowrap"><button class="btn sm" data-edit="${a.id}">Ubah</button><button class="btn sm" data-tog="${a.id}">${a.active ? 'Nonaktifkan' : 'Aktifkan'}</button></div></td></tr>`; }).join('')}
   </tbody></table></div>` : '<div class="empty">Belum ada akun di perusahaan ini.</div>'}</div>
-  <p class="small muted" style="margin:0">Akun Super Admin berlaku untuk semua perusahaan sehingga tidak dicantumkan di daftar ini.</p>`;
+  <p class="small muted" style="margin:0">Akun Super Admin berlaku untuk semua perusahaan sehingga tidak dicantumkan di daftar ini. Kolom Password awal hanya menampilkan password yang diberikan saat akun dibuat atau di-reset. Begitu pengguna mengganti passwordnya sendiri, password itu tidak lagi tercatat dan tidak bisa dilihat siapa pun, termasuk Super Admin.</p>`;
 };
 Views.companyMount = c => {
   const co = Store.get('companies', S.params.id); if (!co) return;
   $('#cAdd', c).onclick = () => accountForm({ companyId: co.id });
-  $('#cAct', c).onclick = () => { S.companyId = co.id; App.saveSession(); App.render(); toast('Perusahaan aktif diganti'); };
+  $('#cAct', c).onclick = () => { S.companyId = co.id; S.inCompany = true; App.go('dash'); };
   $$('[data-edit]', c).forEach(b => b.onclick = () => accountForm(Store.get('accounts', b.dataset.edit)));
+  $$('[data-pweye]', c).forEach(b => b.onclick = () => { const el = $(`[data-pwv="${b.dataset.pweye}"]`, c), a = Store.get('accounts', b.dataset.pweye), on = el.dataset.shown !== '1'; el.dataset.shown = on ? '1' : '0'; el.textContent = on ? a.initPass : '••••••••••'; b.textContent = on ? 'Sembunyi' : 'Lihat'; if (on) audit('lihat password awal', a.username); });
+  $$('[data-pwcopy]', c).forEach(b => b.onclick = async () => { const a = Store.get('accounts', b.dataset.pwcopy); try { await navigator.clipboard.writeText(a.initPass); toast('Password disalin'); } catch (e) { toast('Gagal menyalin. Tekan Lihat lalu salin manual.'); } });
+  $$('[data-newpw]', c).forEach(b => b.onclick = async () => {
+    const a = Store.get('accounts', b.dataset.newpw); if (!(await confirmBox(`Buat password baru untuk ${esc(a.username)}? Password lama tidak berlaku lagi.`, 'Buat password'))) return;
+    const pw = tmpPw(), salt = randSalt(), { resetRequest, ...rest } = a;
+    await Store.put('accounts', a.id, { ...rest, salt, passHash: await sha256(salt + ':' + pw), initPass: pw }); audit('reset password', a.username); App.renderContent(); toast('Password baru dibuat. Lihat di kolom Password awal.');
+  });
   $$('[data-tog]', c).forEach(b => b.onclick = async () => { const a = Store.get('accounts', b.dataset.tog); await Store.put('accounts', a.id, { ...a, active: !a.active }); audit(a.active ? 'nonaktifkan akun' : 'aktifkan akun', a.username); App.renderContent(); });
 };
 
@@ -3118,7 +3169,7 @@ const Ist = {
       <div class="card card-pad"><div class="row" style="justify-content:space-between"><div><div class="eyebrow">Subtes ${s.phase + 1} · ${esc(sub.k)}</div><b>${esc(sub.nama)}</b></div><span class="small muted mono" id="istCnt">${this.answered(sub.k)}/${n} terjawab</span></div></div>
       ${ref}
       <div class="stack" id="istItems">${Array.from({ length: n }, (_, i) => this.itemHtml(sub, i)).join('')}</div>
-      <div class="card card-pad row" style="justify-content:space-between"><span class="small muted">Jawaban tersimpan otomatis. Anda dapat menyelesaikan subtes lebih awal.</span><button class="btn accent" id="istDone">${s.phase === IST_ORDER.length - 1 ? 'Selesai &amp; kirim jawaban' : 'Selesai subtes, lanjut'}</button></div></div>`;
+      <div class="card card-pad row" style="justify-content:space-between"><span class="small muted">Jawaban tersimpan otomatis. Anda dapat menyelesaikan subtes lebih awal.</span><button class="btn accent" id="istDone">${s.phase === IST_ORDER.length - 1 ? 'Selesai mengerjakan' : 'Selesai subtes, lanjut'}</button></div></div>`;
     const box = $('#istItems'), cnt = () => { const c = $('#istCnt'); if (c) c.textContent = `${this.answered(sub.k)}/${n} terjawab`; };
     box.addEventListener('click', e => {
       const b = e.target.closest('.ist-o'); if (!b) return; const i = +b.dataset.a, j = +b.dataset.j;
@@ -3669,6 +3720,198 @@ const Demo = {
   }
 };
 setInterval(() => Demo.bar(), 600);
+/* =========================================================
+   Tampilan per peran: Super Admin, Admin Perusahaan, Peserta
+   ========================================================= */
+
+/* ---------- SUPER ADMIN: daftar perusahaan ---------- */
+Views.companies = () => {
+  const comps = Store.all('companies');
+  return `<div class="page-head"><div><h1>Daftar Perusahaan</h1><p>Pilih perusahaan lalu tekan <b>Masuk</b> untuk melihat data rekrutmen, psikotes, dan kepegawaiannya. Tiap perusahaan memiliki data, akun, dan pengaturan sendiri.</p></div><button class="btn primary" id="addC">+ Perusahaan</button></div>
+  <div class="co-grid">${comps.map(c => {
+    const acc = Store.all('accounts', a => a.companyId === c.id), res = Store.all('disc_results', x => x.companyId === c.id).length + Store.all('ist_results', x => x.companyId === c.id).length;
+    return `<div class="card card-pad stack co-card"><div class="row" style="justify-content:space-between;flex-wrap:nowrap"><div><h2 style="margin:0">${esc(c.name)}</h2><div class="small muted">${esc(c.address || '–')}</div></div><span class="co-ic" aria-hidden="true">${icon('building')}</span></div>
+      <div class="co-stats"><div><b>${acc.filter(a => a.role === CO).length}</b><span>Admin</span></div><div><b>${acc.filter(a => a.role === US).length}</b><span>Peserta</span></div><div><b>${Store.all('employees', e => e.companyId === c.id).length}</b><span>Karyawan</span></div><div><b>${res}</b><span>Hasil tes</span></div></div>
+      <div class="row"><button class="btn primary" data-enter="${c.id}">Masuk</button><button class="btn" data-open="${c.id}">Akun &amp; password</button><button class="btn" data-edit="${c.id}">Ubah</button></div></div>`; }).join('')}</div>
+  ${comps.length ? '' : '<div class="empty">Belum ada perusahaan. Tekan + Perusahaan.</div>'}`;
+};
+Views.companiesMount = c => {
+  $('#addC', c).onclick = () => companyForm();
+  $$('[data-enter]', c).forEach(b => b.onclick = () => { S.companyId = b.dataset.enter; S.inCompany = true; audit('masuk perusahaan', S.companyId); App.go('dash'); });
+  $$('[data-open]', c).forEach(b => b.onclick = () => App.go('company', { id: b.dataset.open }));
+  $$('[data-edit]', c).forEach(b => b.onclick = () => companyForm(Store.get('companies', b.dataset.edit)));
+};
+
+/* ---------- ADMIN PERUSAHAAN: Daftar Peserta ---------- */
+const prLatest = (col, id) => Store.all(col, x => x.accountId === id).sort((a, b) => (b.finishedAt || '').localeCompare(a.finishedAt || ''))[0];
+function prRow(a) {
+  const d = prLatest('disc_results', a.id), i = prLatest('ist_results', a.id);
+  const ds = Store.get('disc_sessions', a.id), is = Store.get('ist_sessions', a.id);
+  const tests = (a.tests || []).map(id => Store.get('skill_tests', id)).filter(Boolean).map(t => { const r = prLatest('skill_results', a.id) && Store.all('skill_results', x => x.accountId === a.id && x.testId === t.id)[0]; return { t, r, s: r ? skillScore(t, r.answers || []) : null, prog: !!Store.get('skill_sessions', a.id + '__' + t.id) }; });
+  const st = (assigned, res, sess) => res && !assigned ? 'done' : sess ? 'prog' : res ? 'done' : assigned ? 'open' : 'none';
+  const dst = st(a.discAllowed, d, ds), ist = st(a.istAllowed, i, is);
+  const slots = [dst, ist, ...tests.map(x => x.r ? 'done' : x.prog ? 'prog' : 'open')].filter(x => x !== 'none');
+  const all = slots.length ? (slots.every(x => x === 'done') ? 'done' : slots.some(x => x === 'prog' || x === 'done') ? 'prog' : 'open') : 'none';
+  return { a, d, i, dst, ist, tests, all, R: d ? discRecommendation(d) : null, C: i ? istCalc(i) : null };
+}
+const prPill = s => ({ done: '<span class="pill ok">Selesai</span>', prog: '<span class="pill warn">Sedang</span>', open: '<span class="pill">Belum</span>', none: '<span class="faint">–</span>' })[s];
+Views.participants = () => {
+  const f = S.params || {};
+  let rows = Store.all('accounts', x => inScope(x) && x.role === US).map(prRow);
+  const all = rows;
+  if (f.unit) rows = rows.filter(x => x.a.unit === f.unit);
+  if (f.st) rows = rows.filter(x => x.all === f.st);
+  if (f.q) rows = rows.filter(x => x.a.name.toLowerCase().includes(f.q.toLowerCase()));
+  rows.sort((x, y) => x.a.name.localeCompare(y.a.name));
+  const walk = [...Store.all('disc_results', r => inScope(r) && !r.accountId).map(r => ({ r, t: 'DISC', go: ['candidate', { id: r.id }] })), ...Store.all('ist_results', r => inScope(r) && !r.accountId).map(r => ({ r, t: 'IST', go: ['istresult', { id: r.id }] }))].sort((a, b) => (b.r.finishedAt || '').localeCompare(a.r.finishedAt || ''));
+  const cnt = k => all.filter(x => x.all === k).length;
+  return `<div class="page-head"><div><h1>Daftar Peserta</h1><p>Semua peserta beserta hasil psikotes DISC, IST, dan tes kemampuan unit. Peserta masuk sendiri dengan username dan password lalu mengerjakan tes yang Anda pilih.</p></div>
+    <div class="row"><button class="btn" id="pIst">Input lembar jawaban IST</button><button class="btn primary" id="pAdd">+ Peserta baru</button></div></div>
+  <div class="grid g4"><div class="card kpi k-blue"><span class="eyebrow">Peserta</span><b>${all.length}</b><span class="small">terdaftar</span></div>
+    <div class="card kpi k-teal"><span class="eyebrow">Belum mulai</span><b>${cnt('open')}</b><span class="small">menunggu</span></div>
+    <div class="card kpi k-orange"><span class="eyebrow">Sedang / sebagian</span><b>${cnt('prog')}</b><span class="small">berlangsung</span></div>
+    <div class="card kpi k-purple"><span class="eyebrow">Selesai semua</span><b>${cnt('done')}</b><span class="small">hasil lengkap</span></div></div>
+  <div class="card" style="margin-top:14px"><div class="card-head"><div class="row"><input class="input" id="pq" placeholder="Cari peserta…" value="${esc(f.q || '')}" style="width:200px"><select class="input" id="pu" style="width:auto">${unitOptions(S.companyId, f.unit).replace('– pilih unit –', 'Semua unit')}</select>
+    <select class="input" id="ps" style="width:auto">${[['', 'Semua status'], ['open', 'Belum mulai'], ['prog', 'Sedang / sebagian'], ['done', 'Selesai semua']].map(([v, l]) => `<option value="${v}" ${f.st === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div><span class="small muted">${rows.length} peserta</span></div>
+  ${rows.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th class="num">No</th><th>Peserta</th><th>Unit / posisi</th><th>Psikotes DISC</th><th>Psikotes IST</th><th>Tes kemampuan unit</th><th></th></tr></thead><tbody>
+    ${rows.map(({ a, d, i, dst, ist, tests, R, C }, n) => `<tr><td class="num no-col">${n + 1}</td><td><b>${esc(a.name)}</b>${sampleTag(a)}<div class="small muted mono">${esc(a.username)}${a.active ? '' : ' · nonaktif'}</div></td>
+      <td>${esc(a.unit || '–')}<div class="small muted">${esc(a.position || '')}</div></td>
+      <td>${prPill(dst)}${d ? `<div class="small"><a href="#" class="lnk" data-d="${d.id}">${R.fit != null ? 'Kesesuaian ' + R.fit + '%' : 'Lihat hasil'}</a><br><span class="muted">${esc(R.sc.def[2].title)}</span></div>` : ''}</td>
+      <td>${prPill(ist)}${i ? (C.pending ? '<div class="small"><a href="#" class="lnk" data-i="' + i.id + '">Nilai GE</a></div>' : `<div class="small"><a href="#" class="lnk" data-i="${i.id}">IQ ${istFmtIq(C.iq)}</a><br><span class="muted">${esc(istIqCat(C.iq))}</span></div>`) : ''}</td>
+      <td>${tests.length ? tests.map(x => `<div class="small">${esc(x.t.title.replace(/^Tes Kompetensi /, ''))}: ${x.s ? `<a href="#" class="lnk" data-t="${x.t.id}"><span class="pill ${x.s.passed ? 'ok' : 'bad'}">${x.s.score}</span></a>` : x.prog ? '<span class="pill warn">Sedang</span>' : '<span class="pill">Belum</span>'}</div>`).join('') : '<span class="faint">–</span>'}</td>
+      <td><button class="btn sm" data-edit="${a.id}">Ubah</button></td></tr>`).join('')}</tbody></table></div>` : `<div class="empty">${all.length ? 'Tidak ada peserta yang cocok dengan filter.' : 'Belum ada peserta. Tekan <b>+ Peserta baru</b> untuk membuat akun dan memilih tes.'}</div>`}</div>
+  ${walk.length ? `<div class="card"><div class="card-head"><h3>Peserta tanpa akun (hasil input HRD)</h3><span class="small muted">${walk.length} hasil</span></div><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Peserta</th><th>Unit / posisi</th><th>Tes</th><th>Tanggal</th></tr></thead><tbody>${walk.map(({ r, t, go }, n) => `<tr class="click" data-go2="${n}"><td><b>${esc(r.name)}</b>${sampleTag(r)}</td><td>${esc(r.unit || '–')}<div class="small muted">${esc(r.position || '')}</div></td><td>${t}</td><td class="small">${fmtDate(r.finishedAt || r.testDate)}</td></tr>`).join('')}</tbody></table></div></div>` : ''}`;
+};
+Views.participantsMount = c => {
+  const f = S.params || {}, re = o => { S.params = { ...f, ...o }; App.renderContent(); };
+  $('#pAdd', c).onclick = () => accountForm({ role: US, companyId: S.companyId, discAllowed: true, istAllowed: true });
+  $('#pIst', c).onclick = () => App.go('ist', { tab: 'baru' });
+  $('#pu', c).onchange = e => re({ unit: e.target.value }); $('#ps', c).onchange = e => re({ st: e.target.value });
+  let t; $('#pq', c).oninput = e => { clearTimeout(t); t = setTimeout(() => { re({ q: e.target.value }); const i = $('#pq'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }, 300); };
+  $$('[data-d]', c).forEach(a => a.onclick = e => { e.preventDefault(); App.go('candidate', { id: a.dataset.d }); });
+  $$('[data-i]', c).forEach(a => a.onclick = e => { e.preventDefault(); App.go('istresult', { id: a.dataset.i }); });
+  $$('[data-t]', c).forEach(a => a.onclick = e => { e.preventDefault(); App.go('test-results', { id: a.dataset.t }); });
+  $$('[data-edit]', c).forEach(b => b.onclick = () => accountForm(Store.get('accounts', b.dataset.edit)));
+  const walk = [...Store.all('disc_results', r => inScope(r) && !r.accountId).map(r => ['candidate', { id: r.id }]), ...Store.all('ist_results', r => inScope(r) && !r.accountId).map(r => ['istresult', { id: r.id }])];
+  const wl = [...Store.all('disc_results', r => inScope(r) && !r.accountId).map(r => ({ r, go: ['candidate', { id: r.id }] })), ...Store.all('ist_results', r => inScope(r) && !r.accountId).map(r => ({ r, go: ['istresult', { id: r.id }] }))].sort((a, b) => (b.r.finishedAt || '').localeCompare(a.r.finishedAt || ''));
+  $$('[data-go2]', c).forEach(tr => tr.onclick = () => App.go(...wl[+tr.dataset.go2].go));
+};
+
+/* ---------- bar perbandingan ---------- */
+function cmpBars(items, { max = 100, min = 0, ref = null, fmt = v => v, color = () => 'var(--s1)' }) {
+  const pos = v => Math.max(0, Math.min(100, (v - min) / (max - min) * 100));
+  return `<div class="cmp">${items.map(it => `<div class="cmp-r"><span class="cmp-n" title="${esc(it.name)}">${esc(it.name)}</span><div class="cmp-t">${ref != null ? `<i class="cmp-ref" style="left:${pos(ref.v)}%" title="${esc(ref.l)}"></i>` : ''}<b style="width:${pos(it.v)}%;background:${color(it.v)}"></b></div><span class="cmp-v">${fmt(it.v)}</span></div>`).join('')}</div>${ref != null ? `<div class="small muted">Garis putus-putus: ${esc(ref.l)}</div>` : ''}`;
+}
+
+/* ---------- ADMIN PERUSAHAAN: Daftar Hasil Psikotes (perbandingan) ---------- */
+Views.cmppsy = () => {
+  const f = S.params || {};
+  const map = {};
+  Store.all('disc_results', inScope).forEach(r => { const k = r.accountId || 'n:' + r.name; (map[k] = map[k] || { name: r.name, unit: r.unit, position: r.position }).d = [...(map[k].d ? [map[k].d] : []), r].sort((a, b) => (b.finishedAt || '').localeCompare(a.finishedAt || ''))[0]; });
+  Store.all('ist_results', inScope).forEach(r => { const k = r.accountId || 'n:' + r.name; const m = map[k] = map[k] || { name: r.name, unit: r.unit, position: r.position }; if (!m.i || (r.finishedAt || '') > (m.i.finishedAt || '')) m.i = r; });
+  let rows = Object.values(map).map(m => ({ ...m, R: m.d ? discRecommendation(m.d) : null, C: m.i ? istCalc(m.i) : null }));
+  const unitName = f.unit || '';
+  if (unitName) rows = rows.filter(x => x.unit === unitName);
+  rows.sort((a, b) => ((b.R?.fit ?? -1) - (a.R?.fit ?? -1)) || a.name.localeCompare(b.name));
+  const fits = rows.filter(x => x.R && x.R.fit != null), iqs = rows.filter(x => x.C && !x.C.pending && x.C.iq != null);
+  const avg = a => a.length ? a.reduce((s, x) => s + x, 0) / a.length : null;
+  const aF = avg(fits.map(x => x.R.fit)), aI = avg(iqs.map(x => +x.C.iq));
+  const col = v => v >= 70 ? 'var(--st-good,#0E8F74)' : v >= 55 ? 'var(--st-warn,#E0A100)' : 'var(--st-bad,#D64545)';
+  const unitCfg = (settingsOf(S.companyId).units || []).find(u => u.name === unitName);
+  return `<div class="page-head"><div><h1>Daftar Hasil Psikotes</h1><p>Perbandingan hasil psikotes DISC dan IST antarpeserta. Pilih unit untuk membandingkan peserta yang melamar unit yang sama.</p></div></div>
+  <div class="card card-pad row" style="gap:12px"><label class="f" style="min-width:240px">Unit<select class="input" id="cu">${unitOptions(S.companyId, unitName).replace('– pilih unit –', 'Semua unit')}</select></label>
+    ${unitCfg ? `<div class="small muted" style="align-self:end">Profil DISC ideal unit ${esc(unitName)}: ${F.map(k => `${k} ${unitCfg.ideal[k] || 'bebas'}`).join(' · ')}</div>` : ''}</div>
+  <div class="grid g4" style="margin-top:14px"><div class="card kpi k-blue"><span class="eyebrow">Peserta</span><b>${rows.length}</b><span class="small">${unitName ? 'unit ' + esc(unitName) : 'semua unit'}</span></div>
+    <div class="card kpi k-teal"><span class="eyebrow">Rata-rata kesesuaian</span><b>${aF == null ? '–' : Math.round(aF) + '%'}</b><span class="small">DISC vs profil unit</span></div>
+    <div class="card kpi k-orange"><span class="eyebrow">Rata-rata IQ</span><b>${aI == null ? '–' : nf(aI, 1)}</b><span class="small">IST</span></div>
+    <div class="card kpi k-purple"><span class="eyebrow">Direkomendasikan</span><b>${rows.filter(x => x.R && x.R.tier === 'Direkomendasikan').length}</b><span class="small">dari ${rows.length}</span></div></div>
+  ${rows.length ? `<div class="grid g2" style="align-items:start;margin-top:14px">
+    <div class="card card-pad stack"><div class="eyebrow">Kesesuaian DISC dengan unit (%)</div>${fits.length ? cmpBars(fits.map(x => ({ name: x.name, v: x.R.fit })), { max: 100, ref: { v: 70, l: 'batas direkomendasikan (70%)' }, fmt: v => v + '%', color: col }) : '<p class="muted" style="margin:0">Belum ada data.</p>'}</div>
+    <div class="card card-pad stack"><div class="eyebrow">IQ (IST)</div>${iqs.length ? cmpBars([...iqs].sort((a, b) => b.C.iq - a.C.iq).map(x => ({ name: x.name, v: +x.C.iq })), { min: 70, max: 140, ref: { v: 100, l: 'rata-rata populasi (100)' }, fmt: v => nf(v, 1), color: v => v >= 110 ? 'var(--st-good,#0E8F74)' : v >= 90 ? 'var(--s1)' : 'var(--st-warn,#E0A100)' }) : '<p class="muted" style="margin:0">Belum ada hasil IST.</p>'}</div></div>
+  <div class="card" style="margin-top:14px"><div class="card-head"><h3>Tabel perbandingan</h3><span class="small muted">klik baris untuk detail</span></div><div class="tbl-wrap"><table class="tbl"><thead><tr><th class="num">No</th><th>Peserta</th><th>Unit / posisi</th><th>Kepribadian asli (DISC)</th><th class="num">Kesesuaian</th><th class="num">IQ</th><th class="num">Jumlah SW</th><th>Gaya berpikir</th><th>Rekomendasi</th></tr></thead><tbody>
+    ${rows.map((x, n) => `<tr class="${x.d ? 'click' : ''}" ${x.d ? `data-d="${x.d.id}"` : x.i ? `data-i="${x.i.id}"` : ''}><td class="num no-col">${n + 1}</td><td><b>${esc(x.name)}</b></td><td>${esc(x.unit || '–')}<div class="small muted">${esc(x.position || '')}</div></td>
+      <td>${x.R ? `<span class="pattern-big">${esc(x.R.sc.p[2].key)}</span><div class="small">${esc(x.R.sc.def[2].title)}</div>` : '<span class="faint">belum</span>'}</td><td class="num">${x.R && x.R.fit != null ? x.R.fit + '%' : '–'}</td>
+      <td class="num">${x.C ? (x.C.pending ? '<span class="pill warn">GE</span>' : istFmtIq(x.C.iq)) : '–'}</td><td class="num">${x.C && !x.C.pending ? x.C.jSW : '–'}</td><td class="small">${x.C && !x.C.pending ? (x.C.gaya.fleksibel ? 'Fleksibel' : 'Mantap berpikir') : '–'}</td>
+      <td>${x.R ? `<span class="pill ${x.R.level}">${esc(x.R.tier)}</span>` : '<span class="faint">–</span>'}</td></tr>`).join('')}</tbody></table></div></div>` : '<div class="card empty" style="margin-top:14px">Belum ada hasil psikotes untuk filter ini.</div>'}`;
+};
+Views.cmppsyMount = c => {
+  $('#cu', c).onchange = e => { S.params = { unit: e.target.value }; App.renderContent(); };
+  $$('[data-d]', c).forEach(tr => tr.onclick = () => App.go('candidate', { id: tr.dataset.d }));
+  $$('tr[data-i]', c).forEach(tr => tr.onclick = () => App.go('istresult', { id: tr.dataset.i }));
+};
+
+/* ---------- ADMIN PERUSAHAAN: Daftar Hasil Kemampuan Unit ---------- */
+Views.cmpskill = () => {
+  const f = S.params || {};
+  const tests = Store.all('skill_tests', inScope);
+  const units = [...new Set([...(settingsOf(S.companyId).units || []).map(u => u.name), ...tests.map(t => t.unit)])].filter(u => tests.some(t => t.unit === u));
+  const unit = f.unit || units[0] || '';
+  const ts = tests.filter(t => t.unit === unit);
+  const body = ts.map(t => {
+    const res = Store.all('skill_results', r => r.testId === t.id && inScope(r)).map(r => ({ r, s: skillScore(t, r.answers || []) })).sort((a, b) => b.s.score - a.s.score || (a.r.durationSec || 0) - (b.r.durationSec || 0));
+    const pend = Store.all('accounts', a => inScope(a) && a.role === US && (a.tests || []).includes(t.id) && !res.some(x => x.r.accountId === a.id));
+    const avg = res.length ? Math.round(res.reduce((s, x) => s + x.s.score, 0) / res.length) : null;
+    return `<div class="card card-pad stack" style="margin-top:14px"><div class="row" style="justify-content:space-between"><div><h2 style="margin:0">${esc(t.title)}</h2><div class="small muted">${t.questions.length} soal · ${t.minutes} menit · passing grade ${t.passing}</div></div><button class="btn sm" data-t="${t.id}">Detail jawaban</button></div>
+      <div class="grid g4"><div class="card kpi k-blue"><span class="eyebrow">Sudah mengerjakan</span><b>${res.length}</b></div><div class="card kpi k-teal"><span class="eyebrow">Lulus</span><b>${res.filter(x => x.s.passed).length}</b></div><div class="card kpi k-orange"><span class="eyebrow">Rata-rata nilai</span><b>${avg ?? '–'}</b></div><div class="card kpi k-purple"><span class="eyebrow">Belum mengerjakan</span><b>${pend.length}</b></div></div>
+      ${res.length ? `<div class="grid g2" style="align-items:start"><div class="stack"><div class="eyebrow">Perbandingan nilai</div>${cmpBars(res.map(x => ({ name: x.r.name, v: x.s.score })), { max: 100, ref: { v: +t.passing, l: 'passing grade ' + t.passing }, color: v => v >= +t.passing ? 'var(--st-good,#0E8F74)' : 'var(--st-bad,#D64545)' })}</div>
+      <div class="tbl-wrap"><table class="tbl"><thead><tr><th class="num">#</th><th>Peserta</th><th class="num">Benar</th><th class="num">Nilai</th><th>Status</th><th class="num">Durasi</th></tr></thead><tbody>${res.map((x, n) => `<tr><td class="num">${n + 1}</td><td><b>${esc(x.r.name)}</b></td><td class="num">${x.s.correct}/${x.s.total}</td><td class="num"><b>${x.s.score}</b></td><td><span class="pill ${x.s.passed ? 'ok' : 'bad'}">${x.s.passed ? 'Lulus' : 'Belum lulus'}</span></td><td class="num small">${x.r.durationSec != null ? Math.round(x.r.durationSec / 60) + ' mnt' : '–'}</td></tr>`).join('')}</tbody></table></div></div>` : '<p class="muted" style="margin:0">Belum ada peserta yang mengerjakan tes ini.</p>'}
+      ${pend.length ? `<div class="small muted">Belum mengerjakan: ${pend.map(a => esc(a.name)).join(', ')}</div>` : ''}</div>`;
+  }).join('');
+  return `<div class="page-head"><div><h1>Daftar Hasil Kemampuan Unit</h1><p>Perbandingan nilai tes kemampuan antarpeserta pada unit tertentu, lengkap dengan passing grade. Soal tes diatur di menu Pengaturan &gt; Soal Tes Kemampuan Unit.</p></div></div>
+  <div class="card card-pad"><label class="f" style="max-width:300px">Unit<select class="input" id="cs">${units.map(u => `<option ${u === unit ? 'selected' : ''}>${esc(u)}</option>`).join('')}</select></label></div>
+  ${units.length ? body : '<div class="card empty" style="margin-top:14px">Belum ada tes kemampuan unit. Buat soal di Pengaturan &gt; Soal Tes Kemampuan Unit.</div>'}`;
+};
+Views.cmpskillMount = c => {
+  const s = $('#cs', c); if (s) s.onchange = e => { S.params = { unit: e.target.value }; App.renderContent(); };
+  $$('[data-t]', c).forEach(b => b.onclick = () => App.go('test-results', { id: b.dataset.t }));
+};
+
+/* ---------- PESERTA: langkah-langkah + mulai/selesai mengerjakan ---------- */
+let pzOut = null, pzTick = null;
+function pzClear() { clearInterval(pzTick); pzTick = null; pzOut = null; }
+function pzItems(a) {
+  const st = settingsOf(a.companyId), items = [];
+  const d = Store.all('disc_results', x => x.accountId === a.id).length, ds = Store.get('disc_sessions', a.id);
+  if (a.discAllowed || ds || d) items.push({ k: 'disc', title: 'Psikotes DISC (kepribadian)', meta: `${st.discMinutes} menit · 24 nomor`, done: d > 0 && !a.discAllowed && !ds, prog: !!ds, start: () => Test.startDisc(),
+    steps: ['Isi usia dan jenis kelamin Anda.', 'Ada 24 nomor. Tiap nomor berisi 4 pernyataan.', 'Pilih satu yang PALING menggambarkan diri Anda (P) dan satu yang PALING TIDAK menggambarkan diri Anda (K).', `Waktu ${st.discMinutes} menit. Tidak ada jawaban benar atau salah, jawablah apa adanya.`, 'Setelah semua nomor terisi, tekan Selesai mengerjakan.'] });
+  const ir = Store.all('ist_results', x => x.accountId === a.id).length, is = Store.get('ist_sessions', a.id);
+  if (a.istAllowed || is || ir) items.push({ k: 'ist', title: 'Psikotes IST (kemampuan berpikir)', meta: `±${IST_SUB.reduce((s, x) => s + x.min, 0) + 3} menit · 9 subtes · 176 soal`, done: ir > 0 && !a.istAllowed && !is, prog: !!is, start: () => Ist.startAccount(),
+    steps: ['Isi usia dan jenis kelamin Anda.', 'Tes terdiri dari 9 subtes yang dikerjakan berurutan.', 'Sebelum tiap subtes ada petunjuk dan contoh. Baca dengan teliti.', 'Tekan Mulai subtes. Waktu tiap subtes berjalan sendiri dan tidak bisa dijeda.', 'Ada jawaban benar dan salah. Soal kosong dinilai salah, tidak ada pengurangan nilai.', 'Setelah subtes terakhir, tekan Selesai mengerjakan.'] });
+  (a.tests || []).map(id => Store.get('skill_tests', id)).filter(t => t && t.active !== false).forEach(t => {
+    const r = Store.all('skill_results', x => x.accountId === a.id && x.testId === t.id).length, s = Store.get('skill_sessions', a.id + '__' + t.id);
+    items.push({ k: 'skill', title: t.title, meta: `${t.minutes} menit · ${t.questions.length} soal pilihan ganda`, done: r > 0, prog: !!s, start: () => Test.startSkill(t.id),
+      steps: [`Tes kemampuan untuk unit ${t.unit}.`, `${t.questions.length} soal pilihan ganda, pilih satu jawaban yang paling tepat.`, `Waktu ${t.minutes} menit dan tidak bisa dijeda.`, 'Anda bisa berpindah antarsoal sebelum menekan Selesai mengerjakan.'] });
+  });
+  return items;
+}
+function renderPeserta() {
+  const a = Store.get('accounts', S.user.id) || S.user, items = pzItems(a), todo = items.filter(x => !x.done), next = todo.find(x => x.prog) || todo[0];
+  const allDone = items.length > 0 && !todo.length;
+  document.body.classList.add('has-user'); document.body.dataset.role = 'user';
+  const head = `<header class="pz-top"><div class="brandmark"><img class="brand-logo" src="${LOGO_UM}" alt="Logo RS Unimedika">Unimedika HR Suite</div><div class="row" style="flex-wrap:nowrap"><span class="small muted hide-sm"><b>${esc(a.name)}</b>${a.unit ? ' · ' + esc(a.unit) : ''}</span><button class="btn sm" id="pzOut">Keluar</button></div></header>`;
+  let main;
+  if (allDone) {
+    if (!pzOut) { pzOut = Date.now() + 8000; pzTick = setInterval(() => { const s = Math.ceil((pzOut - Date.now()) / 1000), el = $('#pzCnt'); if (s <= 0) { pzClear(); App.logout('Terima kasih. Anda sudah keluar otomatis.'); return; } if (el) el.textContent = s; }, 500); }
+    main = `<section class="pz-done"><div class="pz-check" aria-hidden="true"><svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg></div><h1>Terima kasih, ${esc(a.name.split(' ')[0])}!</h1><p>Semua tes sudah selesai dan jawaban Anda diterima HRD. HRD akan menghubungi Anda untuk tahap berikutnya.</p><p class="muted">Akun akan keluar otomatis dalam <b id="pzCnt">8</b> detik.</p><button class="btn" id="pzOut2">Keluar sekarang</button></section>`;
+  } else if (!items.length) {
+    pzClear(); main = `<section class="pz-done"><h1>Belum ada tes untuk Anda</h1><p>HRD belum memilihkan tes untuk akun ini. Hubungi HRD, lalu masuk kembali.</p><button class="btn" id="pzOut2">Keluar</button></section>`;
+  } else {
+    pzClear();
+    main = `<section class="pz-wrap"><div class="pz-intro"><div class="eyebrow">Halo, ${esc(a.name)}</div><h1>Langkah-langkah mengerjakan</h1><p class="muted">${items.length} tes sudah dipilihkan HRD untuk Anda. Kerjakan berurutan di tempat yang tenang dengan koneksi internet stabil.</p></div>
+      <ol class="pz-list">${items.map((it, n) => `<li class="pz-item ${it.done ? 'done' : next === it ? 'now' : ''}"><div class="pz-num">${it.done ? '✓' : n + 1}</div><div class="stack" style="gap:6px"><div class="row" style="justify-content:space-between"><h2 style="margin:0">${esc(it.title)}</h2>${it.done ? '<span class="pill ok">Selesai</span>' : it.prog ? '<span class="pill warn">Sedang dikerjakan</span>' : '<span class="pill">Belum</span>'}</div><div class="small muted">${esc(it.meta)}</div>
+        ${it.done ? '' : next === it ? `<ol class="pz-steps">${it.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol>` : `<details class="pz-more"><summary class="small">Lihat langkah-langkah</summary><ol class="pz-steps">${it.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol></details>`}</div></li>`).join('')}</ol>
+      <div class="pz-cta"><button class="btn primary pz-go" id="pzGo">${next.prog ? 'Lanjutkan mengerjakan' : 'Mulai mengerjakan'}</button><div class="small muted">Berikutnya: <b>${esc(next.title)}</b>. Waktu berjalan setelah Anda memulai.</div></div></section>`;
+  }
+  $('#app').innerHTML = `<div class="pz">${head}<main class="pz-main">${main}</main></div>`;
+  $('#pzOut').onclick = () => { pzClear(); App.logout(); };
+  const o2 = $('#pzOut2'); if (o2) o2.onclick = () => { pzClear(); App.logout(); };
+  const go = $('#pzGo'); if (go) go.onclick = () => next.start();
+}
+(() => {
+  const r0 = App.render, rc0 = App.renderContent;
+  App.render = function () { if (S.user && S.user.role === US && !S.test) { renderPeserta(); return; } pzClear(); return r0.call(this); };
+  App.renderContent = function () { if (S.user && S.user.role === US && !S.test) { renderPeserta(); return; } return rc0.call(this); };
+})();
 /* ---------------- boot ---------------- */
 App.start().catch(e => { console.error(e); $('#app').innerHTML = `<div id="boot">Gagal memuat aplikasi: ${esc(e.message || e)}</div>`; });
 </script>
