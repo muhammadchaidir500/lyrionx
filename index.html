@@ -582,7 +582,17 @@ div.f>label{color:var(--muted);font-weight:700;font-size:13px}
 .ist-img{max-width:100%;height:auto;display:block;border-radius:6px;background:#fff}
 .ist-memo{display:grid;gap:8px}.ist-memo>div{display:grid;grid-template-columns:110px minmax(0,1fr);gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2)}
 .ist-memo b{color:var(--brand-text)}@media(max-width:560px){.ist-memo>div{grid-template-columns:1fr}}
-.ist-ref{position:sticky;top:56px;z-index:4}
+.ist-run.ist-wide{max-width:1180px}
+.ist-split{display:flex;flex-direction:column;gap:14px;align-items:stretch}
+.ist-split>.stack{min-width:0}
+.ist-ref{z-index:4;position:sticky;top:62px;max-height:36vh;overflow:auto;padding:10px 12px}
+.ist-ref .ist-img{margin-top:6px}
+.ist-qb>.ist-img{max-height:210px;width:auto;max-width:100%;object-fit:contain;justify-self:start}
+@media(min-width:900px){
+  .ist-split{display:grid;grid-template-columns:minmax(420px,540px) minmax(0,1fr);gap:16px;align-items:start}
+  .ist-ref{top:70px;max-height:calc(100vh - 90px);padding:14px}
+  .ist-ref .eyebrow{font-size:11px}
+}
 .ist-q{display:grid;grid-template-columns:44px minmax(0,1fr);gap:10px;padding:14px;background:var(--surface);border:1px solid var(--line);border-radius:10px}
 .ist-qn{font:800 15px var(--mono,monospace);color:var(--brand-text);padding-top:2px}.ist-qb{display:grid;gap:10px;min-width:0}.ist-qt{font-size:15.5px;line-height:1.5}
 .ist-opts{display:grid;gap:6px}.ist-opts.img{grid-template-columns:repeat(5,minmax(0,1fr))}
@@ -3171,10 +3181,10 @@ const Ist = {
     const s = S.test.sess, n = sub.to - sub.from + 1;
     const ref = sub.k === 'FA' ? `<div class="ist-ref card card-pad"><div class="eyebrow">Pilihan bentuk · soal ${sub.from}–${sub.from + 11}</div><img class="ist-img" src="${IST_IMG.fa_opt1}" alt="Pilihan bentuk A–E untuk soal 117–128"><div class="eyebrow" style="margin-top:12px">Pilihan bentuk · soal ${sub.from + 12}–${sub.to}</div><img class="ist-img" src="${IST_IMG.fa_opt2}" alt="Pilihan bentuk A–E untuk soal 129–136"></div>`
       : sub.k === 'WU' ? `<div class="ist-ref card card-pad"><div class="eyebrow">Pilihan kubus A–E (berlaku untuk semua soal)</div><img class="ist-img" src="${IST_IMG.wu_opt}" alt="Pilihan kubus A–E"></div>` : '';
-    $('#app').innerHTML = `${this.top()}<div class="test-body ist-run">
+    $('#app').innerHTML = `${this.top()}<div class="test-body ist-run ${ref ? 'ist-wide' : ''}">
       <div class="card card-pad"><div class="row" style="justify-content:space-between"><div><div class="eyebrow">Subtes ${s.phase + 1} · ${esc(sub.k)}</div><b>${esc(sub.nama)}</b></div><span class="small muted mono" id="istCnt">${this.answered(sub.k)}/${n} terjawab</span></div></div>
-      ${ref}
-      <div class="stack" id="istItems">${Array.from({ length: n }, (_, i) => this.itemHtml(sub, i)).join('')}</div>
+      <div class="${ref ? 'ist-split' : ''}">${ref}
+      <div class="stack" id="istItems">${Array.from({ length: n }, (_, i) => this.itemHtml(sub, i)).join('')}</div></div>
       <div class="card card-pad row" style="justify-content:space-between"><span class="small muted">Jawaban tersimpan otomatis. Anda dapat menyelesaikan subtes lebih awal.</span><button class="btn accent" id="istDone">${s.phase === IST_ORDER.length - 1 ? 'Selesai mengerjakan' : 'Selesai subtes, lanjut'}</button></div></div>`;
     const box = $('#istItems'), cnt = () => { const c = $('#istCnt'); if (c) c.textContent = `${this.answered(sub.k)}/${n} terjawab`; };
     box.addEventListener('click', e => {
