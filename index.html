@@ -1807,13 +1807,16 @@ const Test = {
           <label class="f">Jenis Kelamin<select class="input" name="gender"><option>Laki-Laki</option><option>Perempuan</option></select></label>
           <label class="f">Tanggal Tes<input class="input" value="${fmtDate(todayISO())}" readonly></label></form>
           <div class="note">Waktu pengerjaan <b>${st.discMinutes} menit</b> dimulai begitu Anda menekan <b>Mulai tes</b> dan tidak dapat dijeda.</div>`,
-          foot: '<button class="btn" data-close>Batal</button><button class="btn primary" form="idF">Mulai tes</button>',
-          onMount: r => { let sent = false; $$('[data-close]', r).forEach(b => b.addEventListener('click', () => setTimeout(() => { if (!sent) res(null); }, 0)));
-            $('#idF', r).onsubmit = e => { e.preventDefault(); sent = true; const d = formData(e.target); closeModal(); res({ accountId: a.id, name: a.name, age: +d.age, gender: d.gender, testDate: todayISO(), unit: a.unit || '', position: a.position || '' }); }; } });
+          foot: '<button class="btn" data-close>Batal</button><button type="button" class="btn primary" id="idGo">Mulai tes</button>',
+          onMount: r => { let sent = false; const fin = v => { if (sent) return; sent = true; closeModal(); res(v); };
+            $$('[data-close]', r).forEach(b => { if (!b.classList.contains('modal-bg')) b.addEventListener('click', () => fin(null)); });
+            $('.modal-bg', r).addEventListener('click', e => { if (e.target.hasAttribute('data-close')) fin(null); });
+            const F = $('#idF', r), go = () => { if (!F.reportValidity()) return; const d = formData(F); fin({ accountId: a.id, name: a.name, age: +d.age, gender: d.gender, testDate: todayISO(), unit: a.unit || '', position: a.position || '' }); };
+            F.onsubmit = e => { e.preventDefault(); go(); }; $('#idGo', r).onclick = go; } });
       });
       if (!subject) return;
       sess = { accountId: a.id, companyId: a.companyId, startedAt: nowISO(), minutes: +st.discMinutes || 15, answers: Array(24).fill(null), tabSwitch: 0, subject };
-      await Store.put('disc_sessions', a.id, sess); audit('mulai psikotes DISC');
+      Store.put('disc_sessions', a.id, sess).catch(() => {}); audit('mulai psikotes DISC');
     }
     S.test = { kind: 'disc', id: a.id, sess: { ...sess, answers: (sess.answers || Array(24).fill(null)).map(x => x ? [...x] : null), subject: sess.subject || { accountId: a.id, name: a.name, testDate: todayISO(), unit: a.unit || '', position: a.position || '' } } };
     this.begin();
@@ -1832,7 +1835,7 @@ const Test = {
       const ok = await confirmBox(`<b>${esc(t.title)}</b><br>${t.questions.length} soal pilihan ganda, waktu <b>${t.minutes} menit</b>. Waktu tidak dapat dijeda. Mulai sekarang?`, 'Mulai sekarang');
       if (!ok) return;
       sess = { accountId: a.id, companyId: a.companyId, testId: tid, startedAt: nowISO(), minutes: +t.minutes || 10, answers: Array(t.questions.length).fill(null), tabSwitch: 0 };
-      await Store.put('skill_sessions', key, sess); audit('mulai tes kemampuan', t.title);
+      Store.put('skill_sessions', key, sess).catch(() => {}); audit('mulai tes kemampuan', t.title);
     }
     S.test = { kind: 'skill', id: key, test: t, sess: { ...sess, answers: [...sess.answers] }, cur: 0 };
     this.begin();
@@ -3061,13 +3064,16 @@ const Ist = {
           <label class="f">Usia (tahun)<input class="input" name="age" type="number" min="15" max="80" required></label>
           <label class="f">Jenis Kelamin<select class="input" name="gender"><option>Laki-Laki</option><option>Perempuan</option></select></label></form>
           <div class="note">Tes terdiri dari <b>9 subtes</b>. Waktu tiap subtes berjalan sejak tombol <b>Mulai subtes</b> ditekan dan tidak dapat dijeda. Siapkan kertas coretan dan kalkulator tidak diperbolehkan.</div>`,
-          foot: '<button class="btn" data-close>Batal</button><button class="btn primary" form="idF">Lanjut</button>',
-          onMount: r => { let sent = false; $$('[data-close]', r).forEach(b => b.addEventListener('click', () => setTimeout(() => { if (!sent) res(null); }, 0)));
-            $('#idF', r).onsubmit = e => { e.preventDefault(); sent = true; const d = formData(e.target); closeModal(); res({ accountId: a.id, name: a.name, age: +d.age, gender: d.gender, testDate: todayISO(), unit: a.unit || '', position: a.position || '' }); }; } });
+          foot: '<button class="btn" data-close>Batal</button><button type="button" class="btn primary" id="idGo">Lanjut</button>',
+          onMount: r => { let sent = false; const fin = v => { if (sent) return; sent = true; closeModal(); res(v); };
+            $$('[data-close]', r).forEach(b => { if (!b.classList.contains('modal-bg')) b.addEventListener('click', () => fin(null)); });
+            $('.modal-bg', r).addEventListener('click', e => { if (e.target.hasAttribute('data-close')) fin(null); });
+            const F = $('#idF', r), go = () => { if (!F.reportValidity()) return; const d = formData(F); fin({ accountId: a.id, name: a.name, age: +d.age, gender: d.gender, testDate: todayISO(), unit: a.unit || '', position: a.position || '' }); };
+            F.onsubmit = e => { e.preventDefault(); go(); }; $('#idGo', r).onclick = go; } });
       });
       if (!subject) return;
       sess = { accountId: a.id, companyId: a.companyId, startedAt: nowISO(), subject, phase: 0, stage: 'intro', stageAt: null, answers: this.newAns(), tabSwitch: 0 };
-      await Store.put('ist_sessions', a.id, sess); audit('mulai tes IST');
+      Store.put('ist_sessions', a.id, sess).catch(() => {}); audit('mulai tes IST');
     }
     S.test = { kind: 'ist', id: a.id, admin: false, sess: JSON.parse(JSON.stringify(sess)) };
     this.begin();
