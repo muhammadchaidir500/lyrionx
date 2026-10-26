@@ -49,6 +49,11 @@ jobs:
               -H "apikey: $KEY" "${AUTH[@]}")
             echo "Percobaan $i: query database HTTP $code"
             if [ "$code" = "200" ] || [ "$code" = "206" ]; then ok=1; break; fi
+            # 42501 = Postgres menolak hak akses tabel. Query sudah dieksekusi di database,
+            # jadi tetap terhitung aktivitas. Tabel profiles sengaja tidak dibuka untuk anon.
+            if grep -q '"code":"42501"' /tmp/out; then
+              echo "Database merespons (akses tabel dibatasi RLS/hak akses, sesuai harapan)"; ok=1; break
+            fi
             head -c 300 /tmp/out; echo
             sleep 20
           done
