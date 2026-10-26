@@ -1,0 +1,68 @@
+name: Supabase keep-alive
+
+# Mengetuk database setiap proyek Supabase setiap 3 hari supaya proyek
+# paket gratis tidak dijeda (pause) karena tidak aktif. Hanya membaca data.
+on:
+  schedule:
+    - cron: "17 1 */3 * *"   # 01:17 UTC (08:17 WIB) setiap 3 hari
+  workflow_dispatch: {}       # bisa dijalankan manual dari tab Actions
+
+permissions:
+  contents: read
+  actions: write              # untuk mencegah GitHub mematikan jadwal setelah 60 hari repo sepi
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: pantau-biaya-korporat
+            ref: acwausnccjmlyfdmmgfo
+            key_secret: SUPABASE_KEY_PANTAU_BIAYA
+          - name: unitcost-medisin
+            ref: jwcmfoiqshrrkezjzboy
+            key_secret: SUPABASE_KEY_UNITCOST
+          - name: HR manajemen (lyrionx)
+            ref: jgwxnaytgaqkwqzlmdgt
+            key_secret: SUPABASE_KEY_HR
+    steps:
+      - name: Ping ${{ matrix.name }}
+        env:
+          URL: https://${{ matrix.ref }}.supabase.co
+          KEY: ${{ secrets[matrix.key_secret] }}
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "::error::Secret ${{ matrix.key_secret }} belum diisi"; exit 1
+          fi
+          ok=0
+          for i in 1 2 3; do
+            # Query baca ke tabel profiles: memicu aktivitas database (RLS boleh mengembalikan []).
+            code=$(curl -s -o /tmp/out -w '%{http_code}' --max-time 30 \
+              "$URL/rest/v1/profiles?select=id&limit=1" \
+              -H "apikey: $KEY" -H "Authorization: Bearer $KEY")
+            echo "Percobaan $i: HTTP $code"
+            if [ "$code" = "200" ] || [ "$code" = "206" ]; then ok=1; break; fi
+            # Cadangan bila tabel profiles tidak ada/terlihat: cek layanan Auth.
+            code2=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 \
+              "$URL/auth/v1/settings" -H "apikey: $KEY")
+            echo "  cadangan auth/settings: HTTP $code2"
+            if [ "$code2" = "200" ]; then ok=1; break; fi
+            sleep 20
+          done
+          if [ "$ok" != "1" ]; then
+            echo "::error::${{ matrix.name }} tidak merespons (mungkin sudah dijeda atau key salah)"; exit 1
+          fi
+          echo "${{ matrix.name }} aktif pada $(date -u '+%Y-%m-%d %H:%M UTC')"
+
+  keep-schedule-enabled:
+    runs-on: ubuntu-latest
+    needs: ping
+    if: always()
+    steps:
+      - name: Segarkan status workflow agar jadwal tidak dimatikan GitHub
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/supabase-keepalive.yml/enable"
